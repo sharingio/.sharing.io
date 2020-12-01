@@ -1,0 +1,11 @@
+# templates.yaml
+#   templates for instance set up
+
+templates:
+  - name: Kubernetes testing
+    description: |
+      Installs APISnoop suite for live testing, ticket-writing for building tickets, and Kubernetes for working on Kubernetes
+    repos:
+      - cncf/apisnoop
+      - apisnoop/ticket-writing
+      - kubernetes/kubernetes
