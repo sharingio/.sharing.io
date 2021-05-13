@@ -5,6 +5,13 @@ echo "~/.sharing.io/init START"
 # Override in your forks
 export TMATE_SOCKET="${TMATE_SOCKET:-/tmp/ii.default.target.iisocket}"
 
+(
+    set -a
+    . /etc/os-release
+    [ "$ID_LIKE" = "debian" ] && \
+      sudo apt update
+) &
+
 if [ -f /var/run/secrets/kubernetes.io/serviceaccount/namespace ]; then
     echo "~/.sharing.io/init Waiting for tmate socket: $TMATE_SOCKET"
     /usr/local/bin/tmate-wait-for-socket.sh
