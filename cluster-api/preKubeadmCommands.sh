@@ -15,7 +15,7 @@ PACKAGES=(
   dnsutils 
   kitty-terminfo 
   git
-  envsubst
+  gettext-base
 )
 
 pwd
