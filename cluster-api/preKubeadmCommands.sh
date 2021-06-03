@@ -11,9 +11,6 @@ PACKAGES=(
   docker-ce 
   docker-ce-cli 
   containerd.io 
-  kubelet=${RESOLVED_KUBERNETES_VERSION} 
-  kubeadm=${RESOLVED_KUBERNETES_VERSION} 
-  kubectl=${RESOLVED_KUBERNETES_VERSION} 
   ssh-import-id 
   dnsutils 
   kitty-terminfo 
@@ -26,28 +23,8 @@ cd $(dirname $0)
 
 # APIServer Audit rules, good for use with APISnoop suite for Kubernetes test writing
 mkdir -p /etc/kubernetes/pki
-cat <<EOF > /etc/kubernetes/pki/audit-policy.yaml
-apiVersion: audit.k8s.io/v1
-kind: Policy
-rules:
-- level: RequestResponse
-EOF
-cat <<EOF > /etc/kubernetes/pki/audit-sink.yaml
-apiVersion: v1
-kind: Config
-clusters:
-- cluster:
-    server: http://10.96.96.96:9900/events
-  name: auditsink-cluster
-contexts:
-- context:
-    cluster: auditsink-cluster
-    user: ""
-  name: auditsink-context
-current-context: auditsink-context
-users: []
-preferences: {}
-EOF
+cp ./manifests/audit-policy.yaml /etc/kubernetes/pki/audit-policy.yaml
+cp ./manifests/audit-sink.yaml /etc/kubernetes/pki/audit-sink.yaml
 
 # ensure mounts
 sed -ri '/\\sswap\\s/s/^#?/#/' /etc/fstab
@@ -65,7 +42,10 @@ add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(
 apt-get update -y
 TRIMMED_KUBERNETES_VERSION=$(echo $KUBERNETES_VERSION | sed 's/\./\\./g' | sed 's/^v//')
 RESOLVED_KUBERNETES_VERSION=$(apt-cache policy kubelet | awk -v VERSION=${TRIMMED_KUBERNETES_VERSION} '$1~ VERSION { print $1 }' | head -n1)
-apt-get install -y ${PACKAGES[*]}
+apt-get install -y ${PACKAGES[*]} \
+  kubelet=${RESOLVED_KUBERNETES_VERSION} \
+  kubeadm=${RESOLVED_KUBERNETES_VERSION} \
+  kubectl=${RESOLVED_KUBERNETES_VERSION} 
 
 # configure container runtime
 cat <<EOF | tee /etc/modules-load.d/containerd.conf
