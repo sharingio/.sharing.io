@@ -1,0 +1,39 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: public-html
+  namespace: $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
+spec:
+  releaseName: public-html
+  chart:
+    git: https://gitlab.com/safesurfer/go-http-server
+    ref: 1.2.0
+    path: deployments/go-http-server
+  values:
+    serveFolder: /home/ii/public_html
+    vuejsHistoryMode: false
+    image:
+      tag: 1.2.0
+    ingress:
+      enabled: true
+      realIPHeader: "X-Real-Ip"
+      hosts:
+        - host: www.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+          paths:
+            - /
+      tls:
+        - secretName: letsencrypt-prod
+          hosts:
+            - www.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+    extraVolumeMounts:
+      - name: humacs-home-ii
+        mountPath: /home/ii
+      - name: host
+        mountPath: /var/run/host
+    extraVolumes:
+      - name: humacs-home-ii
+        persistentVolumeClaim:
+          claimName: humacs-home-ii
+      - name: host
+        hostPath:
+          path: /

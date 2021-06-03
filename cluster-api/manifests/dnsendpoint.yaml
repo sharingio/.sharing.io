@@ -1,0 +1,22 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+  namespace: powerdns
+spec:
+  endpoints:
+    - dnsName: "$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
+      recordTTL: 60
+      recordType: A
+      targets:
+        - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+    - dnsName: "*.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
+      recordTTL: 60
+      recordType: A
+      targets:
+        - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+    - dnsName: "$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
+      recordTTL: 60
+      recordType: SOA
+      targets:
+        - "ns1.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME. hostmaster.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME. 5 60 60 60 60"

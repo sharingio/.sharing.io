@@ -1,0 +1,51 @@
+#+TITLE: Cluster-API set up on Pair
+#+PROPERTY: header-args:shell+ :prologue "( " :epilogue " ) 2>&1 ; :" :results silent
+
+Commands that are run in the lifecycle of setting up a Pair instance
+
+* Fetch external manifests
+Packet-CCM
+#+begin_src shell
+curl -o ./manifests/packet-ccm.yaml -L https://github.com/packethost/packet-ccm/releases/download/v2.0.0/deployment.yaml
+#+end_src
+
+Local-Path-Storage
+#+begin_src shell
+curl -o ./manifests/local-path-storage.yaml -L https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.19/deploy/local-path-storage.yaml
+#+end_src
+
+Cert-Manager
+#+begin_src shell
+curl -o ./manifests/cert-manager.yaml -L https://github.com/jetstack/cert-manager/releases/download/v1.1.1/cert-manager.yaml
+#+end_src
+
+WeaveNet
+#+begin_src shell
+curl -o ./manifests/weavenet.yaml -L "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE=192.168.0.0/16"
+#+end_src
+
+Helm-Operator
+#+begin_src shell
+curl -o ./manifests/helm-operator-crds.yaml -L https://raw.githubusercontent.com/fluxcd/helm-operator/1.2.0/deploy/crds.yaml
+
+helm repo add fluxcd https://charts.fluxcd.io
+helm template helm-operator --create-namespace fluxcd/helm-operator \
+    --namespace helm-operator \
+    --set helm.versions=v3 > ./manifests/helm-operator.yaml
+#+end_src
+
+Registry Creds
+#+begin_src shell
+curl -o ./manifests/registry-creds.yaml -L https://raw.githubusercontent.com/alexellis/registry-creds/0.2.5/manifest.yaml
+#+end_src
+
+Metallb
+#+begin_src shell
+curl -o ./manifests/metallb-namespace.yaml -L https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
+curl -o ./manifests/metallb.yaml -L https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
+#+end_src
+
+External-DNS
+#+begin_src shell
+curl -o ./manifests/external-dns-crd.yaml -L https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.8.0/docs/contributing/crd-source/crd-manifest.yaml
+#+end_src
