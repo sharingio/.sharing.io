@@ -1,4 +1,8 @@
 #!/bin/bash
+# 
+# Variables
+# KUBERNETES_CONTROLPLANE_ENDPOINT
+# KUBERNETES_VERSION
 
 PACKAGES=(
   ca-certificates 
