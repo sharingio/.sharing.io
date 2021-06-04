@@ -5,6 +5,7 @@ NAMESPACES=(
     external-dns
     metallb
     nginx-ingress
+    helm-operator
     $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
 )
 
@@ -61,13 +62,13 @@ kubectl patch storageclasses.storage.k8s.io local-path -p '{"metadata": {"annota
 kubectl apply -f ./manifests/cert-manager.yaml
 kubectl apply -f ./manifests/weavenet.yaml
 kubectl apply -f ./manifests/helm-operator-crds.yaml
-kubectl apply -f ./manifests/helm-operator.yaml
+kubectl -n helm-operator apply -f ./manifests/helm-operator.yaml
 kubectl apply -f ./manifests/registry-creds.yaml
 kubectl get configmap kube-proxy -n kube-system -o yaml | sed -e "s/strictARP: false/strictARP: true/" | kubectl apply -f - -n kube-system
 kubectl apply -f ./manifests/metallb-namespace.yaml
 kubectl apply -f ./manifests/metallb.yaml
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
-envsubst < ./manifests/metallb-system-config.yaml | kubectl apply -f -
+envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system apply -f -
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 until kubectl -n nginx-ingress get deployment nginx-ingress-ingress-nginx-controller; do
   echo "waiting for nginx-ingress deployment"
