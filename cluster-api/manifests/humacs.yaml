@@ -1,0 +1,53 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: humacs
+  namespace: "$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE"
+spec:
+  releaseName: "$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE"
+  chart:
+    git: https://github.com/humacs/humacs
+    ref: eaf562e067faa086d3165aba659fa52b727662d8
+    path: chart/humacs
+  values:
+    image:
+      repository: $SHARINGIO_PAIR_INSTANCE_HUMACS_REPOSITORY
+      tag: $SHARINGIO_PAIR_INSTANCE_HUMACS_VERSION
+    options:
+      hostDockerSocket: true
+      hostTmp: true
+      timezone: $SHARINGIO_PAIR_INSTANCE_SETUP_TIMEZONE
+      gitName: $SHARINGIO_PAIR_INSTANCE_SETUP_FULLNAME
+      gitEmail: $SHARINGIO_PAIR_INSTANCE_SETUP_EMAIL
+      profile: ""
+      repos:
+        $SHARINGIO_PAIR_INSTANCE_SETUP_REPOS_EXPANDED
+      preinitScript: . /usr/local/bin/sharingio-pair-preinit-script.sh
+    extraEnvVars:
+      - name: SHARINGIO_PAIR_NAME
+        value: $SHARINGIO_PAIR_INSTANCE_NAME
+      - name: SHARINGIO_PAIR_USER
+        value: $SHARINGIO_PAIR_INSTANCE_SETUP_USER
+      - name: SHARINGIO_PAIR_KUBERNETES_CONTROLPLANE_ENDPOINT
+        value: ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+      - name: HUMACS_DEBUG
+        value: "true"
+      - name: REINIT_HOME_FOLDER
+        value: "true"
+      - name: SHARINGIO_PAIR_BASE_DNS_NAME
+        value: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+      - name: GITHUB_TOKEN
+        value: $SHARINGIO_PAIR_INSTANCE_SETUP_GITHUBOAUTHTOKEN
+      $SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
+    extraVolumes:
+      - name: home-ii
+        persistentVolumeClaim:
+          claimName: humacs-home-ii
+      - name: host
+        hostPath:
+          path: /
+    extraVolumeMounts:
+      - name: home-ii
+        mountPath: /home/ii
+      - name: host
+        mountPath: /var/run/host
