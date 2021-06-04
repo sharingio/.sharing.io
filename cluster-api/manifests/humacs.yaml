@@ -29,7 +29,7 @@ spec:
       - name: SHARINGIO_PAIR_USER
         value: "$SHARINGIO_PAIR_INSTANCE_SETUP_USER"
       - name: SHARINGIO_PAIR_KUBERNETES_CONTROLPLANE_ENDPOINT
-        value: "${KUBERNETES_CONTROLPLANE_ENDPOINT}""
+        value: "${KUBERNETES_CONTROLPLANE_ENDPOINT}"
       - name: HUMACS_DEBUG
         value: "true"
       - name: REINIT_HOME_FOLDER
