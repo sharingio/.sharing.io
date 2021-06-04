@@ -25,19 +25,19 @@ spec:
       preinitScript: . /usr/local/bin/sharingio-pair-preinit-script.sh
     extraEnvVars:
       - name: SHARINGIO_PAIR_NAME
-        value: $SHARINGIO_PAIR_INSTANCE_NAME
+        value: "$SHARINGIO_PAIR_INSTANCE_NAME"
       - name: SHARINGIO_PAIR_USER
-        value: $SHARINGIO_PAIR_INSTANCE_SETUP_USER
+        value: "$SHARINGIO_PAIR_INSTANCE_SETUP_USER"
       - name: SHARINGIO_PAIR_KUBERNETES_CONTROLPLANE_ENDPOINT
-        value: ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+        value: "${KUBERNETES_CONTROLPLANE_ENDPOINT}""
       - name: HUMACS_DEBUG
         value: "true"
       - name: REINIT_HOME_FOLDER
         value: "true"
       - name: SHARINGIO_PAIR_BASE_DNS_NAME
-        value: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+        value: "$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
       - name: GITHUB_TOKEN
-        value: $SHARINGIO_PAIR_INSTANCE_SETUP_GITHUBOAUTHTOKEN
+        value: "$SHARINGIO_PAIR_INSTANCE_SETUP_GITHUBOAUTHTOKEN"
       $SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
     extraVolumes:
       - name: home-ii
