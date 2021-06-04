@@ -44,7 +44,7 @@ done
 kubectl -n default get configmap sharingio-pair-init-complete && exit 0
 
 # create namespaces
-for NAMESPACE in $NAMESPACES; do
+for NAMESPACE in ${NAMESPACES[*]}; do
     kubectl create namespace $NAMESPACE
 done
 # allow scheduling
