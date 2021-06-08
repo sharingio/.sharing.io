@@ -22,7 +22,11 @@ spec:
       profile: ""
       repos:
         $SHARINGIO_PAIR_INSTANCE_SETUP_REPOS_EXPANDED
-      preinitScript: . /usr/local/bin/sharingio-pair-preinit-script.sh
+      preinitScript: |
+        git clone "https://github.com/$SHARINGIO_PAIR_USER/.sharing.io" || \
+          git clone https://github.com/sharingio/.sharing.io
+
+        . $HOME/.sharing.io/sharingio-pair-preinit-script.sh
     extraEnvVars:
       - name: SHARINGIO_PAIR_NAME
         value: "$SHARINGIO_PAIR_INSTANCE_NAME"
