@@ -18,6 +18,16 @@ spec:
       grafana.ini:
         auth.anonymous:
           enabled: true
+      dashboards:
+        default:
+          node-exporter:
+            gnetId: 1860
+            revision: 15
+            datasource: Prometheus
+          deployments:
+            gnetId: 8588
+            revision: 1
+            datasource: Prometheus
       adminPassword: "admin"
       ingress:
         enabled: true
