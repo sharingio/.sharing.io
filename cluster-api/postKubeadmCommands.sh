@@ -26,6 +26,7 @@ NAMESPACES=(
     metallb
     nginx-ingress
     helm-operator
+    kube-prometheus
     $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
 )
 
@@ -98,6 +99,10 @@ envsubst < ./manifests/humacs.yaml | kubectl apply -f -
 
 # www
 envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
+
+# prometheus + grafana
+envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
+kubectl label ns kube-prometheus cert-manager-tls=sync
 
 # DNS
 kubectl apply -f ./manifests/external-dns-crd.yaml
