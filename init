@@ -2,6 +2,10 @@
 echo "This will run on sharing.io humacs init"
 echo "~/.sharing.io/init START"
 
+cd $(dirname $0)
+GIT_ROOT=$(git rev-parse --show-toplevel)
+cd $GIT_ROOT
+
 # Override in your forks
 export TMATE_SOCKET="${TMATE_SOCKET:-/tmp/ii.default.target.iisocket}"
 
@@ -14,6 +18,9 @@ function git-status-all {
 }
 EOF
 
+echo "~/.sharing.io/init Waiting for tmate socket: $TMATE_SOCKET"
+/usr/local/bin/tmate-wait-for-socket.sh
+
 (
     set -a
     . /etc/os-release
@@ -21,14 +28,14 @@ EOF
       sudo apt update
 ) &
 
-if [ -f /var/run/secrets/kubernetes.io/serviceaccount/namespace ]; then
-    echo "~/.sharing.io/init Waiting for tmate socket: $TMATE_SOCKET"
-    /usr/local/bin/tmate-wait-for-socket.sh
-    echo "~/.sharing.io/init Creating tmate SHELL window"
-    # without it, there is only emacs, hard for new users
-    tmate -F -v -S $TMATE_SOCKET new-window -d -c "$PWD" -n SHELL bash
-    # Feel free to customize the startup beyond here
-    if [ -f "users/${SHARINGIO_PAIR_USER:-$USER}-init" ] ; then
-      ./users/${SHARINGIO_PAIR_USER:-$USER}
-    fi
+if [ -x "$GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}-init" ] ; then
+    (
+        cd $INIT_DEFAULT_REPOS_FOLDER
+        $GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}-init &
+    )
 fi
+
+echo "~/.sharing.io/init Creating tmate SHELL window"
+# without it, there is only emacs, hard for new users
+tmate -F -v -S $TMATE_SOCKET new-window -d -c "$PWD" -n SHELL bash
+# Feel free to customize the startup beyond here
