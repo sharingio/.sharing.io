@@ -28,4 +28,7 @@ if [ -f /var/run/secrets/kubernetes.io/serviceaccount/namespace ]; then
     # without it, there is only emacs, hard for new users
     tmate -F -v -S $TMATE_SOCKET new-window -d -c "$PWD" -n SHELL bash
     # Feel free to customize the startup beyond here
+    if [ -f "users/${SHARINGIO_PAIR_USER:-$USER}-init" ] ; then
+      ./users/${SHARINGIO_PAIR_USER:-$USER}
+    fi
 fi

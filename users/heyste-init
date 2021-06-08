@@ -1,0 +1,19 @@
+#/bin/bash
+echo "Processing heyste-init..."
+git clone https://github.com/apisnoop/ticket-writing.git
+git clone https://github.com/cncf/apisnoop.git
+git clone https://github.com/ii/org.git
+cd $HOME/org
+git remote add upstream git@github.com:ii/org.git
+git remote add heyste git@github.com:heyste/org.git
+cd $HOME/ticket-writing
+git remote add upstream git@github.com:apisnoop/ticket-writing.git
+mkdir -p $HOME/go/src/k8s.io
+cd $HOME/go/src/k8s.io
+git clone https://github.com/kubernetes/kubernetes.git
+cd kubernetes
+git remote add ii git@github.com:ii/kubernetes.git
+git remote add heyste git@github.com:heyste/kubernetes.git
+make WHAT=test/e2e/e2e.test
+go get golang.org/x/lint/golint
+echo "export PATH=$PATH:$HOME/go/bin" >> $HOME/.bashrc
