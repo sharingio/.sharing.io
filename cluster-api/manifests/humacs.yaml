@@ -7,7 +7,7 @@ spec:
   releaseName: "$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE"
   chart:
     git: https://github.com/humacs/humacs
-    ref: eaf562e067faa086d3165aba659fa52b727662d8
+    ref: $SHARINGIO_PAIR_INSTANCE_HUMACS_VERSION
     path: chart/humacs
   values:
     image:
