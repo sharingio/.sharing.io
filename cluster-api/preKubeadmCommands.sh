@@ -35,6 +35,17 @@ sed -ri '/\\sswap\\s/s/^#?/#/' /etc/fstab
 swapoff -a
 mount -a
 
+# ensure interfaces are configured
+cat <<EOF >> /etc/network/interfaces
+auto lo:0
+iface lo:0 inet static
+  address $KUBERNETES_CONTROLPLANE_ENDPOINT
+  netmask 255.255.255.255
+EOF
+systemctl restart networking
+
+ping -c 3 -q "$KUBERNETES_CONTROLPLANE_ENDPOINT" && echo OK || ifup lo:0
+
 # install required packages
 apt-get -y update
 DEBIAN_FRONTEND=noninteractive apt-get install -y apt-transport-https curl
@@ -85,7 +96,6 @@ until systemctl status docker; do
   sleep 1s
 done
 chgrp users /var/run/docker.sock
-ping -c 3 -q "$KUBERNETES_CONTROLPLANE_ENDPOINT" && echo OK || ip addr add "$KUBERNETES_CONTROLPLANE_ENDPOINT" dev lo
 
 # configure sysctls for Kubernetes
 cat <<EOF | tee /etc/sysctl.d/99-kubernetes-cri.conf
@@ -94,4 +104,3 @@ net.ipv4.ip_forward                 = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 sysctl --system
-

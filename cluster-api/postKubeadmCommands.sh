@@ -38,14 +38,6 @@ export KUBECONFIG=/root/.kube/config
 pwd
 cd $(dirname $0)
 
-# ensure interfaces are configured
-cat <<EOF >> /etc/network/interfaces
-auto lo:0
-iface lo:0 inet static
-  address $KUBERNETES_CONTROLPLANE_ENDPOINT
-  netmask 255.255.255.255
-EOF
-
 # ensure ii user has sufficient capabilities and access
 mkdir -p /etc/sudoers.d
 echo "%sudo    ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
