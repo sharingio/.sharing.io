@@ -37,5 +37,5 @@ fi
 
 echo "~/.sharing.io/init Creating tmate SHELL window"
 # without it, there is only emacs, hard for new users
-tmate -F -v -S $TMATE_SOCKET new-window -d -c "$PWD" -n SHELL bash
+tmate -F -v -S $TMATE_SOCKET new-window -d -c "$HOME" -n SHELL bash
 # Feel free to customize the startup beyond here
