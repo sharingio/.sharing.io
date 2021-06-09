@@ -28,10 +28,10 @@ echo "~/.sharing.io/init Waiting for tmate socket: $TMATE_SOCKET"
       sudo apt update
 ) &
 
-if [ -x "$GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}-init" ] ; then
+if [ -x "$GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}/init" ] ; then
     (
         cd $INIT_DEFAULT_REPOS_FOLDER
-        $GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}-init &
+        $GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}/init &
     )
 fi
 
