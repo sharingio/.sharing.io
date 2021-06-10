@@ -35,7 +35,7 @@ sed -ri '/\\sswap\\s/s/^#?/#/' /etc/fstab
 swapoff -a
 mount -a
 
-if [ "$SHARINGIO_PAIR_INSTANCE_NODE_TYPE" = "control-plane" ]; then
+if [ -n "$KUBERNETES_CONTROLPLANE_ENDPOINT" ]; then
   # ensure interfaces are configured
   cat <<EOF >> /etc/network/interfaces
 auto lo:0
