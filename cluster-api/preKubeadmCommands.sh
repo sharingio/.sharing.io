@@ -35,7 +35,7 @@ sed -ri '/\\sswap\\s/s/^#?/#/' /etc/fstab
 swapoff -a
 mount -a
 
-if [ "$SHARINGIO_PAIR_INSTANCE_NODE_TYPE" = "control-plane" ] || [ -z "$SHARINGIO_PAIR_INSTANCE_NODE_TYPE" ]; then
+if [ "$SHARINGIO_PAIR_INSTANCE_NODE_TYPE" = "control-plane" ]; then
   # ensure interfaces are configured
   cat <<EOF >> /etc/network/interfaces
 auto lo:0
@@ -46,7 +46,6 @@ EOF
   systemctl restart networking
 
   ping -c 3 -q "$KUBERNETES_CONTROLPLANE_ENDPOINT" && echo OK || ifup lo:0
-
 fi
 
 # install required packages
