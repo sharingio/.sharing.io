@@ -19,6 +19,8 @@ echo "~/.sharing.io/init Waiting for tmate socket: $TMATE_SOCKET"
       sudo apt update
 ) &
 
+docker pull alpine:edge &
+
 if [ -x "$GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}/init" ] ; then
     (
         cd $INIT_DEFAULT_REPOS_FOLDER
