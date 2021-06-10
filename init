@@ -9,15 +9,6 @@ cd $GIT_ROOT
 # Override in your forks
 export TMATE_SOCKET="${TMATE_SOCKET:-/tmp/ii.default.target.iisocket}"
 
-cat <<EOF >> ~/.bashrc
-function git-status-all {
-    for d in \$(find \$HOME -name .git); do
-        echo -e "\n*** Repository: \$d ***"
-        git --git-dir=\$d --work-tree=\$d/.. status
-    done
-}
-EOF
-
 echo "~/.sharing.io/init Waiting for tmate socket: $TMATE_SOCKET"
 /usr/local/bin/tmate-wait-for-socket.sh
 
