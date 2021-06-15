@@ -20,6 +20,7 @@ echo "~/.sharing.io/init Waiting for tmate socket: $TMATE_SOCKET"
     set -a
     . /etc/os-release
     [ "$ID_LIKE" = "debian" ] && \
+      sudo apt-wait && \
       sudo apt update
 ) &
 
