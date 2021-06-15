@@ -28,12 +28,7 @@ spec:
     extraVolumeMounts:
       - name: humacs-home-ii
         mountPath: /home/ii
-      - name: host
-        mountPath: /var/run/host
     extraVolumes:
       - name: humacs-home-ii
-        persistentVolumeClaim:
-          claimName: humacs-home-ii
-      - name: host
         hostPath:
-          path: /
+          path: /home/ii
