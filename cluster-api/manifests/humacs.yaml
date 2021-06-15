@@ -47,8 +47,8 @@ spec:
       $SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
     extraVolumes:
       - name: home-ii
-        persistentVolumeClaim:
-          claimName: humacs-home-ii
+        hostPath:
+          path: /home/ii
       - name: host
         hostPath:
           path: /
