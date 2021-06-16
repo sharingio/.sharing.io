@@ -3,6 +3,7 @@
 # Variables
 # KUBERNETES_CONTROLPLANE_ENDPOINT
 # KUBERNETES_VERSION
+# MACHINE_IP
 
 PACKAGES=(
   ca-certificates 
@@ -24,6 +25,9 @@ PACKAGES=(
 
 pwd
 cd $(dirname $0)
+
+export MACHINE_IP=$(ip a s bond0 | grep -E -o 'inet [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d' ' -f2 | head -n 1)
+echo "MACHINE_IP=$MACHINE_IP" | tee -a /root/.sharing-io-pair-init.env
 
 # APIServer Audit rules, good for use with APISnoop suite for Kubernetes test writing
 mkdir -p /etc/kubernetes/pki

@@ -19,6 +19,7 @@
 # SHARINGIO_PAIR_INSTANCE_SETUP_GITHUBOAUTHTOKEN
 # SHARINGIO_PAIR_INSTANCE_SETUP_REPOS_EXPANDED
 # SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
+# MACHINE_IP
 
 NAMESPACES=(
     powerdns
@@ -88,6 +89,7 @@ until kubectl -n nginx-ingress get deployment nginx-ingress-ingress-nginx-contro
   sleep 5s
 done
 kubectl wait -n nginx-ingress --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+kubectl -n nginx-ingress patch svc nginx-ingress-ingress-nginx-controller -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 
 envsubst < ./manifests/metrics-server.yaml | kubectl apply -f -
 envsubst < ./manifests/kubed.yaml | kubectl apply -f -
@@ -117,8 +119,8 @@ until kubectl -n powerdns get svc powerdns-service-dns-udp; do
   echo "waiting for deployed PowerDNS Chart"
   sleep 5s
 done
-kubectl -n powerdns patch svc powerdns-service-dns-udp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\"]}}"
-kubectl -n powerdns patch svc powerdns-service-dns-tcp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\"]}}"
+kubectl -n powerdns patch svc powerdns-service-dns-udp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
+kubectl -n powerdns patch svc powerdns-service-dns-tcp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
 kubectl -n powerdns wait pod --for=condition=Ready --selector=app.kubernetes.io/name=powerdns --timeout=200s
