@@ -21,6 +21,13 @@
 # SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
 # MACHINE_IP
 
+if sudo [ -f /root/.sharing-io-pair-init.env ]; then
+  ENV_FILE=/root/.sharing-io-pair-init.env
+elif sudo [ -f /var/run/host/root/.sharing-io-pair-init.env ]; then
+  ENV_FILE=/var/run/host/root/.sharing-io-pair-init.env
+fi
+. <(sudo cat "${ENV_FILE}" | tr -d '\r')
+
 NAMESPACES=(
     powerdns
     external-dns
@@ -33,7 +40,7 @@ NAMESPACES=(
 
 # use kubeconfig
 mkdir -p /root/.kube
-cp -i /etc/kubernetes/admin.conf /root/.kube/config
+cp -if /etc/kubernetes/admin.conf /root/.kube/config
 export KUBECONFIG=/root/.kube/config
 
 # ensure correct directory
@@ -53,13 +60,6 @@ sudo -iu ii ssh-import-id "gh:$SHARINGIO_PAIR_INSTANCE_SETUP_USER"
 for GUEST in $SHARINGIO_PAIR_INSTANCE_SETUP_GUESTS; do
     sudo -iu ii ssh-import-id "gh:$GUEST"
 done
-
-# exit if Kubernetes resources are already set up
-if kubectl -n default get configmap sharingio-pair-init-complete 2>&1; then
-  echo "warning: to re-run '$0', you must run"
-  echo "  kubectl -n default delete configmap sharingio-pair-init-complete"
-  exit 0
-fi
 
 # create namespaces
 for NAMESPACE in ${NAMESPACES[*]}; do
@@ -85,8 +85,12 @@ kubectl apply -f ./manifests/registry-creds.yaml
 kubectl get configmap kube-proxy -n kube-system -o yaml | sed -e "s/strictARP: false/strictARP: true/" | kubectl apply -f - -n kube-system
 kubectl apply -f ./manifests/metallb-namespace.yaml
 kubectl apply -f ./manifests/metallb.yaml
-kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)" 2> /dev/null
 envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system apply -f -
+envsubst < ./manifests/metrics-server.yaml | kubectl apply -f -
+envsubst < ./manifests/kubed.yaml | kubectl apply -f -
+
+# nginx-ingress-controller
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 time (
   until kubectl -n nginx-ingress get deployment nginx-ingress-ingress-nginx-controller; do
@@ -96,9 +100,6 @@ time (
 )
 time kubectl wait -n nginx-ingress --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
 kubectl -n nginx-ingress patch svc nginx-ingress-ingress-nginx-controller -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
-
-envsubst < ./manifests/metrics-server.yaml | kubectl apply -f -
-envsubst < ./manifests/kubed.yaml | kubectl apply -f -
 
 # Humacs
 kubectl label ns "$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE" cert-manager-tls=sync
@@ -112,7 +113,7 @@ envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
 envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
 kubectl label ns kube-prometheus cert-manager-tls=sync
 
-# DNS
+# Instance managed DNS
 kubectl apply -f ./manifests/external-dns-crd.yaml
 kubectl -n external-dns create secret generic external-dns-pdns \
     --from-literal=domain-filter="$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME" \
@@ -130,7 +131,6 @@ time (
 kubectl -n powerdns patch svc powerdns-service-dns-udp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 kubectl -n powerdns patch svc powerdns-service-dns-tcp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
-
 time kubectl -n powerdns wait pod --for=condition=Ready --selector=app.kubernetes.io/name=powerdns --timeout=200s
 time (
   until [ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
@@ -156,7 +156,7 @@ kubectl -n powerdns create secret generic tsig-powerdns --from-literal=powerdns=
 
 envsubst < ./manifests/certs.yaml | kubectl apply -f -
 
-kubectl -n default create configmap sharingio-pair-init-complete
+kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
 
 time (
   while true; do
