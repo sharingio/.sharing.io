@@ -55,7 +55,11 @@ for GUEST in $SHARINGIO_PAIR_INSTANCE_SETUP_GUESTS; do
 done
 
 # exit if Kubernetes resources are already set up
-kubectl -n default get configmap sharingio-pair-init-complete && exit 0
+if kubectl -n default get configmap sharingio-pair-init-complete 2>&1; then
+  echo "warning: to re-run '$0', you must run"
+  echo "  kubectl -n default delete configmap sharingio-pair-init-complete"
+  exit 0
+fi
 
 # create namespaces
 for NAMESPACE in ${NAMESPACES[*]}; do
@@ -84,11 +88,13 @@ kubectl apply -f ./manifests/metallb.yaml
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
 envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system apply -f -
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
-until kubectl -n nginx-ingress get deployment nginx-ingress-ingress-nginx-controller; do
-  echo "waiting for nginx-ingress deployment"
-  sleep 5s
-done
-kubectl wait -n nginx-ingress --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+time (
+  until kubectl -n nginx-ingress get deployment nginx-ingress-ingress-nginx-controller; do
+      echo "waiting for nginx-ingress deployment"
+      sleep 5s
+  done
+)
+time kubectl wait -n nginx-ingress --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
 kubectl -n nginx-ingress patch svc nginx-ingress-ingress-nginx-controller -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 
 envsubst < ./manifests/metrics-server.yaml | kubectl apply -f -
@@ -115,19 +121,23 @@ kubectl -n external-dns create secret generic external-dns-pdns \
     --from-literal=pdns-api-key=pairingissharing
 envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
 envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
-until kubectl -n powerdns get svc powerdns-service-dns-udp; do
-  echo "waiting for deployed PowerDNS Chart"
-  sleep 5s
-done
+time (
+  until kubectl -n powerdns get svc powerdns-service-dns-udp; do
+      echo "waiting for deployed PowerDNS Chart"
+      sleep 5s
+  done
+)
 kubectl -n powerdns patch svc powerdns-service-dns-udp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 kubectl -n powerdns patch svc powerdns-service-dns-tcp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
-kubectl -n powerdns wait pod --for=condition=Ready --selector=app.kubernetes.io/name=powerdns --timeout=200s
-until [ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
-  echo "BaseDNSName does not resolve to Instance IP yet"
-  sleep 1
-done
+time kubectl -n powerdns wait pod --for=condition=Ready --selector=app.kubernetes.io/name=powerdns --timeout=200s
+time (
+  until [ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
+      echo "BaseDNSName does not resolve to Instance IP yet"
+      sleep 1
+  done
+)
 kubectl -n powerdns exec deployment/powerdns -- pdnsutil generate-tsig-key pair hmac-md5
 kubectl -n powerdns exec deployment/powerdns -- pdnsutil activate-tsig-key ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} pair master
 kubectl -n powerdns exec deployment/powerdns -- pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} TSIG-ALLOW-DNSUPDATE pair
@@ -148,13 +158,15 @@ envsubst < ./manifests/certs.yaml | kubectl apply -f -
 
 kubectl -n default create configmap sharingio-pair-init-complete
 
-while true; do
-    conditions=$(kubectl -n powerdns get cert letsencrypt-prod -o=jsonpath='{.status.conditions[0]}')
-    if [ "$(echo $conditions | jq -r .type)" = "Ready" ] && [ "$(echo $conditions | jq -r .status)" = "True" ]; then
+time (
+  while true; do
+      conditions=$(kubectl -n powerdns get cert letsencrypt-prod -o=jsonpath='{.status.conditions[0]}')
+      if [ "$(echo $conditions | jq -r .type)" = "Ready" ] && [ "$(echo $conditions | jq -r .status)" = "True" ]; then
         break
-    fi
-    echo "Waiting for valid TLS cert"
-    sleep 1
-done
+      fi
+      echo "Waiting for valid TLS cert"
+      sleep 1
+  done
+)
 kubectl -n powerdns annotate secret letsencrypt-prod kubed.appscode.com/sync=cert-manager-tls --overwrite
 
