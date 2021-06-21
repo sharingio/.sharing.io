@@ -41,8 +41,8 @@ curl -o ./manifests/registry-creds.yaml -L https://raw.githubusercontent.com/ale
 
 Metallb
 #+begin_src shell
-curl -o ./manifests/metallb-namespace.yaml -L https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
-curl -o ./manifests/metallb.yaml -L https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
+curl -o ./manifests/metallb-namespace.yaml -L https://raw.githubusercontent.com/metallb/metallb/v0.10.2/manifests/namespace.yaml
+curl -o ./manifests/metallb.yaml -L https://raw.githubusercontent.com/metallb/metallb/v0.10.2/manifests/metallb.yaml
 #+end_src
 
 External-DNS
