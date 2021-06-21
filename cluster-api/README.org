@@ -16,7 +16,7 @@ curl -o ./manifests/local-path-storage.yaml -L https://raw.githubusercontent.com
 
 Cert-Manager
 #+begin_src shell
-curl -o ./manifests/cert-manager.yaml -L https://github.com/jetstack/cert-manager/releases/download/v1.1.1/cert-manager.yaml
+curl -o ./manifests/cert-manager.yaml -L https://github.com/jetstack/cert-manager/releases/download/v1.4.0/cert-manager.yaml
 #+end_src
 
 WeaveNet
