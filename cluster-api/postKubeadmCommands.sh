@@ -148,6 +148,11 @@ envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
   kubectl -n powerdns exec deployment/powerdns -- pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} NOTIFY-DNSUPDATE 1
   kubectl -n powerdns exec deployment/powerdns -- pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} SOA-EDIT-DNSUPDATE EPOCH
   export POWERDNS_TSIG_SECRET="$(kubectl -n powerdns exec deployment/powerdns -- pdnsutil list-tsig-keys | grep pair | awk '{print $3}')"
+  time (
+    until dig "@${KUBERNETES_CONTROLPLANE_ENDPOINT}" "${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"; do
+      sleep 1s
+    done
+  )
   nsupdate <<EOF
 server ${KUBERNETES_CONTROLPLANE_ENDPOINT} 53
 zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
