@@ -98,10 +98,6 @@ envsubst < ./manifests/humacs.yaml | kubectl apply -f -
 # www
 envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
 
-# prometheus + grafana
-envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
-kubectl label ns kube-prometheus cert-manager-tls=sync
-
 # nginx-ingress-controller
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 (
@@ -136,7 +132,9 @@ envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
   )
   kubectl -n powerdns patch svc powerdns-service-dns-udp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
   kubectl -n powerdns patch svc powerdns-service-dns-tcp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
-  time kubectl -n powerdns wait pod --for=condition=Ready --selector=app.kubernetes.io/name=powerdns --timeout=200s
+  time (until kubectl -n powerdns wait pod --for=condition=Ready --selector=app.kubernetes.io/name=powerdns --timeout=10s; do
+          sleep 1s
+       done)
   kubectl -n powerdns exec deployment/powerdns -- pdnsutil generate-tsig-key pair hmac-md5
   kubectl -n powerdns exec deployment/powerdns -- pdnsutil activate-tsig-key ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} pair master
   kubectl -n powerdns exec deployment/powerdns -- pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} TSIG-ALLOW-DNSUPDATE pair
@@ -166,6 +164,11 @@ envsubst < ./manifests/certs.yaml | kubectl apply -f -
 until [ -f /tmp/.sharingio-pair-init-ready-powerdns ] && [ -f /tmp/.sharingio-pair-init-ready-nginx-ingress ]; do
   echo "Waiting for Powerdns and nginx-ingress to be ready"
 done
+
+# prometheus + grafana
+envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
+kubectl label ns kube-prometheus cert-manager-tls=sync
+
 kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
 
 time (
