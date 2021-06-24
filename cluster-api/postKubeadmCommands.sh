@@ -180,7 +180,7 @@ time (
 )
 envsubst < ./manifests/certs.yaml | kubectl apply -f -
 
-until [ "$(cat /tmp/.sharingio-pair-init-ready-powerdns)" = "true" ] && [ "$(cat /tmp/.sharingio-pair-init-ready-nginx-ingress)" = "true" ]; do
+until [ "$(cat /tmp/.sharingio-pair-init-ready-powerdns 2> /dev/null)" = "true" ] && [ "$(cat /tmp/.sharingio-pair-init-ready-nginx-ingress 2> /dev/null)" = "true" ]; do
   echo "Waiting for Powerdns and nginx-ingress to be ready"
   sleep 1s
 done
