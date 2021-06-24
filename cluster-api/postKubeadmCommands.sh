@@ -95,9 +95,6 @@ kubectl label ns "$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE" cert-manager-tls
 envsubst < ./manifests/humacs-pvc.yaml | kubectl apply -f -
 envsubst < ./manifests/humacs.yaml | kubectl apply -f -
 
-# www
-envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
-
 # nginx-ingress-controller
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 (
@@ -188,6 +185,9 @@ done
 # prometheus + grafana
 envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
 kubectl label ns kube-prometheus cert-manager-tls=sync
+
+# www
+envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
 
 kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
 
