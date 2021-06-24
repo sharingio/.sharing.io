@@ -106,9 +106,13 @@ envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
         echo "waiting for nginx-ingress deployment"
         sleep 5s
     done
-    echo true > /tmp/.sharingio-pair-init-ready-nginx-ingress
   )
-  time kubectl wait -n nginx-ingress --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+  time (
+    until kubectl wait -n nginx-ingress get svc nginx-ingress-ingress-nginx-controller; do
+      sleep 1s
+    done
+  )
+  echo true > /tmp/.sharingio-pair-init-ready-nginx-ingress
   kubectl -n nginx-ingress patch svc nginx-ingress-ingress-nginx-controller -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 ) &
 
@@ -153,7 +157,7 @@ envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
       sleep 1s
     done
   )
-  time until [ $(dig A +short "@${KUBERNETES_CONTROLPLANE_ENDPOINT}" "ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}") = "${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" ]; do
+  time until [ $(dig A +short "@${KUBERNETES_CONTROLPLANE_ENDPOINT}" "ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}") = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
     nsupdate <<EOF
 server ${KUBERNETES_CONTROLPLANE_ENDPOINT} 53
 zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
@@ -161,6 +165,7 @@ update add ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} 60 NS ns1.${SHARINGIO_PA
 key pair ${POWERDNS_TSIG_SECRET}
 send
 EOF
+    sleep 1s
   done
   kubectl -n cert-manager create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET"
   kubectl -n powerdns create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET"
