@@ -153,13 +153,15 @@ envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
       sleep 1s
     done
   )
-  nsupdate <<EOF
+  time until [ $(dig "@${KUBERNETES_CONTROLPLANE_ENDPOINT}" "ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}") = "${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" ]; do
+    nsupdate <<EOF
 server ${KUBERNETES_CONTROLPLANE_ENDPOINT} 53
 zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
 update add ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} 60 NS ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
 key pair ${POWERDNS_TSIG_SECRET}
 send
 EOF
+  done
   kubectl -n cert-manager create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET"
   kubectl -n powerdns create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET"
   echo true > /tmp/.sharingio-pair-init-ready-powerdns
