@@ -157,7 +157,7 @@ envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
       sleep 1s
     done
   )
-  time until [ "$(dig A +short \"@${KUBERNETES_CONTROLPLANE_ENDPOINT}\" \"ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}\")" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
+  time until [ "$(dig A +short @${KUBERNETES_CONTROLPLANE_ENDPOINT} ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME})" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
     nsupdate <<EOF
 server ${KUBERNETES_CONTROLPLANE_ENDPOINT} 53
 zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
