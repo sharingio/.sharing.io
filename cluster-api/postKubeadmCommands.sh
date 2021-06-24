@@ -153,7 +153,7 @@ envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
       sleep 1s
     done
   )
-  time until [ $(dig "@${KUBERNETES_CONTROLPLANE_ENDPOINT}" "ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}") = "${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" ]; do
+  time until [ $(dig A +short "@${KUBERNETES_CONTROLPLANE_ENDPOINT}" "ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}") = "${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" ]; do
     nsupdate <<EOF
 server ${KUBERNETES_CONTROLPLANE_ENDPOINT} 53
 zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
@@ -175,8 +175,9 @@ time (
 )
 envsubst < ./manifests/certs.yaml | kubectl apply -f -
 
-until [ -f /tmp/.sharingio-pair-init-ready-powerdns ] && [ -f /tmp/.sharingio-pair-init-ready-nginx-ingress ]; do
+until [ "$(cat /tmp/.sharingio-pair-init-ready-powerdns)" = "true" ] && [ "$(cat /tmp/.sharingio-pair-init-ready-nginx-ingress)" = "true" ]; do
   echo "Waiting for Powerdns and nginx-ingress to be ready"
+  sleep 1s
 done
 
 # prometheus + grafana
