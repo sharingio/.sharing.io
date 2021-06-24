@@ -108,7 +108,7 @@ envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
     done
   )
   time (
-    until kubectl wait -n nginx-ingress get svc nginx-ingress-ingress-nginx-controller; do
+    until kubectl -n nginx-ingress get svc nginx-ingress-ingress-nginx-controller; do
       sleep 1s
     done
   )
@@ -157,7 +157,7 @@ envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
       sleep 1s
     done
   )
-  time until [ $(dig A +short "@${KUBERNETES_CONTROLPLANE_ENDPOINT}" "ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}") = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
+  time until [ "$(dig A +short \"@${KUBERNETES_CONTROLPLANE_ENDPOINT}\" \"ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}\")" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
     nsupdate <<EOF
 server ${KUBERNETES_CONTROLPLANE_ENDPOINT} 53
 zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
