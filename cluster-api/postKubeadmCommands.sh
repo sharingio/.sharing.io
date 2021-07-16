@@ -188,6 +188,7 @@ kubectl label ns kube-prometheus cert-manager-tls=sync
 
 # www
 envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
+envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
 
 kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
 
