@@ -37,6 +37,10 @@ spec:
           annotations:
             metallb.universe.tf/allow-shared-ip: nginx-ingress
     mariadb:
+      image:
+        repository: linuxserver/mariadb
+        tag: alpine-version-10.5.12-r0
+      args: []
       mysql_pass: pairingissharing
       mysql_rootpass: pairingissharing
     admin:
