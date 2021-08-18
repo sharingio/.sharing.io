@@ -8,11 +8,15 @@
 
   </head>
   <body>
-    <h1>Hi there!</h1>
-    <p>
-      It appears that you've stumpled upon a shiny <a href="https://github.com/sharingio/pair">Pair</a> instance.
-      This one was brought up recently by yours truely
-    </p>
+    <div id=title-box>
+      <h1>Hi there!</h1>
+    </div>
+    <div id=content>
+      <p>
+        It appears that you've stumpled upon a shiny <a href="https://github.com/sharingio/pair">Pair</a> instance.
+        This one was brought up recently by yours truely
+      </p>
+    </div>
   </body>
   <style>
    :root {
@@ -36,11 +40,21 @@
    body h1 {
      font-size: calc(var(--font-size) * 3);
      font-weight: 1000;
+     margin: 0;
+   }
+
+   #title-box {
      background: linear-gradient(341deg , #ceecb738, #6db3d940);
      border-radius: 10px;
      padding: 10px 10px;
      border: 5px solid #dddddd;
      box-shadow: #000000ab 10px 10px 0px 1px, #dec7e9 10px 10px 17px 7px;
+     width: 60%;
+     margin: 0 20% 0 20%;
+   }
+
+   #content {
+     width: 100%;
    }
 
    a {
