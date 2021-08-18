@@ -68,6 +68,9 @@ done
 # allow scheduling
 kubectl taint node --all node-role.kubernetes.io/master-
 
+# add packet-cloud-config for picking up some values later
+kubectl create secret generic -n kube-system packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}"
+
 # setup host path storage
 kubectl apply -f ./manifests/local-path-storage.yaml
 kubectl patch storageclasses.storage.k8s.io local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
