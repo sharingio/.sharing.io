@@ -8,3 +8,4 @@ echo "This is Caleb's things!"
 rm ~/public_html
 ln -s "${PWD}/public_html" ~/public_html
 
+cat ${PWD}/.bashrc++ >> $HOME/.bashrc
