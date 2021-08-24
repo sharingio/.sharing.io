@@ -1,0 +1,6 @@
+nuke-humacs() {
+  echo -e "\e[41m\e[1;37mResetting your environment in 5 seconds. C-c to cancel\e[0m"
+  sleep 5s
+  kubectl -n "${SHARINGIO_PAIR_USER,,}" rollout restart "statefulset/${SHARINGIO_PAIR_USER,,}-humacs"
+  echo "Please note: you will disconnect momentarily and will need to reconnect manually."
+}

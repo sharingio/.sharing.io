@@ -10,6 +10,8 @@ if ! git remote -v | grep -q https://github.com/sharingio/.sharing.io; then
     git remote add upstream https://github.com/sharingio/.sharing.io
 fi
 
+cat ${PWD}/.bashrc++ >> ${HOME}/.bashrc
+
 # Override in your forks
 export TMATE_SOCKET="${TMATE_SOCKET:-/tmp/ii.default.target.iisocket}"
 
