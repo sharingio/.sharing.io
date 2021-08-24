@@ -3,4 +3,4 @@ __prompt_k8s() {
     if [[ $? -eq 0 ]] ; then echo -e "(${k8s_current_context}) "; fi
 }
 
-export PS1="\e[40m\[\033[38;5;40m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\e[40m\[\033[38;5;35m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\]\e[40m:[\[$(tput sgr0)\]\[\033[38;5;39m\]\e[40m\w\[$(tput sgr0)\]\[\033[38;5;15m\]]\e[40m#\[$(tput sgr0)\]\[\033[38;5;126m\]\e[40m\$(__prompt_k8s)🐚\[$(tput sgr0)\]\[\033[38;5;15m\]\e[40m \[$(tput sgr0)\]\e[40m$(date)\[$(tput sgr0)\]\n> "
+export PS1="\e[40m\[\033[38;5;40m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\e[40m\[\033[38;5;35m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\]\e[40m:[\[$(tput sgr0)\]\[\033[38;5;39m\]\e[40m\w\[$(tput sgr0)\]\[\033[38;5;15m\]]\e[40m#\[$(tput sgr0)\]\[\033[38;5;126m\]\e[40m\$(__prompt_k8s)🐚\[$(tput sgr0)\]\[\033[38;5;15m\]\e[40m \[$(tput sgr0)\]\e[40m\$(date)\[$(tput sgr0)\]\n> "
