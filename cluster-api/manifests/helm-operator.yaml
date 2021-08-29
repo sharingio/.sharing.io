@@ -4,9 +4,10 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: helm-operator
+  namespace: helm-operator
   labels:
     app: helm-operator
-    chart: helm-operator-1.2.0
+    chart: helm-operator-1.4.0
     release: helm-operator
     heritage: Helm
 ---
@@ -15,6 +16,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: helm-operator-git-deploy
+  namespace: helm-operator
 type: Opaque
 ---
 # Source: helm-operator/templates/kube.yaml
@@ -22,29 +24,18 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: helm-operator-kube-config
+  namespace: helm-operator
 data:
   config: |
-    apiVersion: v1
-    clusters: []
-    contexts:
-    - context:
-        cluster: ""
-        namespace: default
-        user: ""
-      name: default
-    current-context: default
-    kind: Config
-    preferences: {}
-    users: []
 ---
 # Source: helm-operator/templates/rbac.yaml
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: helm-operator
   labels:
     app: helm-operator
-    chart: helm-operator-1.2.0
+    chart: helm-operator-1.4.0
     release: helm-operator
     heritage: Helm
 rules:
@@ -60,13 +51,13 @@ rules:
       - '*'
 ---
 # Source: helm-operator/templates/rbac.yaml
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: helm-operator
   labels:
     app: helm-operator
-    chart: helm-operator-1.2.0
+    chart: helm-operator-1.4.0
     release: helm-operator
     heritage: Helm
 roleRef:
@@ -83,9 +74,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: helm-operator
+  namespace: helm-operator
   labels:
     app: helm-operator
-    chart: helm-operator-1.2.0
+    chart: helm-operator-1.4.0
     release: helm-operator
     heritage: Helm
 spec:
@@ -104,9 +96,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: helm-operator
+  namespace: helm-operator
   labels:
     app: helm-operator
-    chart: helm-operator-1.2.0
+    chart: helm-operator-1.4.0
     release: helm-operator
     heritage: Helm
 spec:
@@ -126,18 +119,15 @@ spec:
         release: helm-operator
     spec:
       serviceAccountName: helm-operator
+      terminationGracePeriodSeconds: 300
       volumes:
-      - name: config
-        configMap:
-          name: helm-operator-kube-config
-          defaultMode: 0600
       - name: git-key
         secret:
           secretName: helm-operator-git-deploy
           defaultMode: 0400
       containers:
       - name: flux-helm-operator
-        image: "docker.io/fluxcd/helm-operator:1.2.0"
+        image: "docker.io/fluxcd/helm-operator:1.4.0"
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
@@ -161,15 +151,11 @@ spec:
           successThreshold: 1
           failureThreshold: 3
         volumeMounts:
-        - name: config
-          mountPath: /root/.kube
-          readOnly: true
         - name: git-key
           mountPath: /etc/fluxd/ssh
           readOnly: true
         args:
         - --enabled-helm-versions=v3
-        - --kubeconfig=/root/.kube/config
         - --log-format=fmt
         - --git-timeout=20s
         - --git-poll-interval=5m
@@ -179,6 +165,7 @@ spec:
         - --log-release-diffs=false
         - --workers=4
         - --tiller-namespace=kube-system
+        - --convert-release-storage=secrets
         resources:
           requests:
             cpu: 50m

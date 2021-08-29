@@ -26,17 +26,13 @@ curl -o ./manifests/weavenet.yaml -L "https://cloud.weave.works/k8s/net?k8s-vers
 
 Helm-Operator
 #+begin_src shell
-curl -o ./manifests/helm-operator-crds.yaml -L https://raw.githubusercontent.com/fluxcd/helm-operator/1.2.0/deploy/crds.yaml
+curl -o ./manifests/helm-operator-crds.yaml -L https://raw.githubusercontent.com/fluxcd/helm-operator/1.4.0/deploy/crds.yaml
 
 helm repo add fluxcd https://charts.fluxcd.io
 helm template helm-operator --create-namespace fluxcd/helm-operator \
+    --version 1.4.0 \
     --namespace helm-operator \
     --set helm.versions=v3 > ./manifests/helm-operator.yaml
-#+end_src
-
-Registry Creds
-#+begin_src shell
-curl -o ./manifests/registry-creds.yaml -L https://raw.githubusercontent.com/alexellis/registry-creds/0.2.5/manifest.yaml
 #+end_src
 
 Metallb
