@@ -30,6 +30,8 @@ spec:
             datasource: Prometheus
       adminPassword: "admin"
       ingress:
+        annotations:
+          kubernetes.io/ingress.class: nginx
         enabled: true
         hosts:
           - grafana.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
