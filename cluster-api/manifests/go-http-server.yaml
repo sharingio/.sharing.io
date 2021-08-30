@@ -7,13 +7,13 @@ spec:
   releaseName: public-html
   chart:
     git: https://gitlab.com/safesurfer/go-http-server
-    ref: 1.3.0
+    ref: master
     path: deployments/go-http-server
   values:
     serveFolder: /home/ii/public_html
     vuejsHistoryMode: false
     image:
-      tag: 1.3.0
+      tag: 1.5.0
     ingress:
       enabled: true
       annotations:
