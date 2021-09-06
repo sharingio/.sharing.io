@@ -11,6 +11,10 @@ spec:
     version: 4.0.1
   values:
     controller:
+      ingressClassResource:
+        default: true
+      config:
+        use-proxy-protocol: "true"
       service:
         externalTrafficPolicy: Local
         annotations:
