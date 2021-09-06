@@ -1,0 +1,18 @@
+#+TITLE: .sharing.io
+
+#+begin_quote
+Configuration for Pair instances
+#+end_quote
+
+* Structure
+- [[./sharingio-pair-preinit-script.sh][sharingio-pair-preinit-script.sh]] :: a script that's runs after all repos are cloned
+- [[./init][init]] :: a standard repo init script, this one adds several niceities
+- [[./.bashrc++][.bashrc++]] :: extra useful =bash= things
+- users/{USERNAME}/init :: user specific init scripts
+- [[./public_html][public_html]] :: the default /public_html/ folder, linked to =~/public_html=
+- [[./cluster-api/preKubeadmCommands.sh][cluster-api/preKubeadmCommands.sh]] :: commands run before the instance has Kubernetes installed
+- [[./cluster-api/postKubeadmCommands.sh][cluster-api/postKubeadmCommands.sh]] :: commands run after the instance has Kubernetes installed, setting it up as an instance
+- [[./cluster-api/manifests/][cluster-api/manifests/]] :: the manifests that make up the instance
+
+* Notes
+- when this repo is forked, the fork is preferred over this one
