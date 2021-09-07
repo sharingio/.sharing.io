@@ -41,6 +41,9 @@ sed -ri '/\\sswap\\s/s/^#?/#/' /etc/fstab
 swapoff -a
 mount -a
 
+# disable unused services
+systemctl disable --now snapd.service snapd.socket
+
 if [ -n "$KUBERNETES_CONTROLPLANE_ENDPOINT" ]; then
   # ensure interfaces are configured
   cat <<EOF >> /etc/network/interfaces
