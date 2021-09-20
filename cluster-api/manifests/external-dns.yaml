@@ -81,6 +81,7 @@ spec:
           image: k8s.gcr.io/external-dns/external-dns:v0.8.0
           args:
             - --source=crd
+            - --source=ingress
             - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
             - --crd-source-kind=DNSEndpoint
             - --provider=pdns
