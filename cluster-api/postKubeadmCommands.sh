@@ -69,7 +69,8 @@ done
 kubectl taint node --all node-role.kubernetes.io/master-
 
 # add packet-cloud-config for picking up some values later
-kubectl create secret generic -n kube-system packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}"
+kubectl create secret generic -n kube-system packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}" --dry-run=client -o yaml | \
+  kubectl apply -f-
 
 # setup host path storage
 kubectl apply -f ./manifests/local-path-storage.yaml
@@ -169,8 +170,10 @@ send
 EOF
     sleep 1s
   done
-  kubectl -n cert-manager create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET"
-  kubectl -n powerdns create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET"
+  kubectl -n cert-manager create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET" --dry-run=client -o yaml | \
+    kubectl apply -f -
+  kubectl -n powerdns create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET" --dry-run=client -o yaml | \
+    kubectl apply -f -
   echo true > /tmp/.sharingio-pair-init-ready-powerdns
 ) &
 
