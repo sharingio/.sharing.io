@@ -193,13 +193,24 @@ until (
   sleep 1s
 done
 
-# prometheus + grafana
-envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
-kubectl label ns kube-prometheus cert-manager-tls=sync
+(
+  echo "Waiting until Humacs is ready"
+  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" wait pod --for=condition=Ready --selector=app.kubernetes.io/name=humacs --timeout=10s; do
+    sleep 1s
+  done
+  echo "Waiting until nginx-ingress admission webhook is available"
+  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" exec -it "statefulset/${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}-humacs" -- nc -zv nginx-ingress-ingress-nginx-controller-admission.nginx-ingress.svc 443; do
+    sleep 1s
+  done
 
-# www
-envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
-envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
+  # prometheus + grafana
+  envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
+  kubectl label ns kube-prometheus cert-manager-tls=sync
+
+  # www
+  envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
+  envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
+) &
 
 kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
 
