@@ -13,6 +13,8 @@ spec:
     image:
       repository: $SHARINGIO_PAIR_INSTANCE_HUMACS_REPOSITORY
       tag: $SHARINGIO_PAIR_INSTANCE_HUMACS_VERSION
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: ""
     options:
       hostDockerSocket: true
       hostTmp: true
