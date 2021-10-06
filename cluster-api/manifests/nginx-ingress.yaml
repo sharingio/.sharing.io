@@ -11,6 +11,24 @@ spec:
     version: 4.0.1
   values:
     controller:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - ingress-nginx
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+      autoscaling:
+        enabled: true
+        maxReplicas: ${SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS}
+        minReplicas: ${SHARINGIO_PAIR_INSTANCE_TOTAL_NODES}
+        targetCPUUtilizationPercentage: 80
+      minAvailable: ${SHARINGIO_PAIR_INSTANCE_TOTAL_NODES}
       ingressClassResource:
         default: true
       service:

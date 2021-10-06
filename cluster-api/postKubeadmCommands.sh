@@ -94,6 +94,9 @@ kubectl label ns "$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE" cert-manager-tls
 envsubst < ./manifests/humacs-pvc.yaml | kubectl apply -f -
 envsubst < ./manifests/humacs.yaml | kubectl apply -f -
 
+# scale the ingress controller across all the nodes
+export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_WORKER_NODES:-0}))
+export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
 # nginx-ingress-controller
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 (
