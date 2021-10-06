@@ -10,6 +10,8 @@ spec:
     repository: https://raw.githubusercontent.com/sharingio/helm-charts/gh-pages/
     version: 0.1.12
   values:
+    image:
+      tag: 4.3-alpine
     domain: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
     default_soa_name: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
     powerdns:
