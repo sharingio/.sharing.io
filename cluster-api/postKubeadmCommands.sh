@@ -94,6 +94,25 @@ kubectl label ns "$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE" cert-manager-tls
 envsubst < ./manifests/humacs-pvc.yaml | kubectl apply -f -
 envsubst < ./manifests/humacs.yaml | kubectl apply -f -
 
+(
+  echo "Waiting until Humacs is ready"
+  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" wait pod --for=condition=Ready --selector=app.kubernetes.io/name=humacs --timeout=10s; do
+    sleep 1s
+  done
+  echo "Waiting until nginx-ingress admission webhook is available"
+  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" exec -it "statefulset/${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}-humacs" -- nc -zv nginx-ingress-ingress-nginx-controller-admission.nginx-ingress.svc 443; do
+    sleep 1s
+  done
+
+  # prometheus + grafana
+  envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
+  kubectl label ns kube-prometheus cert-manager-tls=sync
+
+  # www
+  envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
+  envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
+) &
+
 # scale the ingress controller across all the nodes
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_WORKER_NODES:-0}))
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
@@ -195,25 +214,6 @@ until (
   echo "Waiting for Powerdns and nginx-ingress to be ready"
   sleep 1s
 done
-
-(
-  echo "Waiting until Humacs is ready"
-  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" wait pod --for=condition=Ready --selector=app.kubernetes.io/name=humacs --timeout=10s; do
-    sleep 1s
-  done
-  echo "Waiting until nginx-ingress admission webhook is available"
-  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" exec -it "statefulset/${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}-humacs" -- nc -zv nginx-ingress-ingress-nginx-controller-admission.nginx-ingress.svc 443; do
-    sleep 1s
-  done
-
-  # prometheus + grafana
-  envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
-  kubectl label ns kube-prometheus cert-manager-tls=sync
-
-  # www
-  envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
-  envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
-) &
 
 kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
 
