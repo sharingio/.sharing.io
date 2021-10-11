@@ -90,7 +90,6 @@ spec:
             - --registry=txt
             - --interval=10s
             - --log-level=debug
-            - --txt-prefix=_e
             - --managed-record-types=A
             - --managed-record-types=CNAME
             - --managed-record-types=NS
