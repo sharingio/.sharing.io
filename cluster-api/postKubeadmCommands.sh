@@ -114,7 +114,6 @@ envsubst < ./manifests/humacs.yaml | kubectl apply -f -
 ) &
 
 # scale the ingress controller across all the nodes
-__SHARINGIO_PAIR_KUBERNETES_WORKER_NODES="$(kubectl get nodes -l node-role.kubernetes.io/control-plane!="" -o name | wc -l)"
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_WORKER_NODES:-0}))
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
 # nginx-ingress-controller
