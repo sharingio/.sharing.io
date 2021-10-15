@@ -28,7 +28,7 @@ git clone "https://github.com/$SHARINGIO_PAIR_USER/.doom.d" || \
     org-tangle "${DOOM_CONFIG_FILE}"
     doom sync
 )
-[ -x "$HOME/public_html" ] && \
+[ -e "$HOME/public_html" ] && \
   ln -s "$HOME/.sharing.io/public_html" "$HOME/public_html"
 if [ ! -f "$HOME/public_html/index.html" ]; then
     echo "Welcome to this Pair instance! Add your site in '$HOME/public_html'" > "$HOME/.sharing.io/public_html/index.html"
