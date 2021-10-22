@@ -11,3 +11,7 @@ nuke-humacs() {
   __cmd kubectl -n "${SHARINGIO_PAIR_USER,,}" rollout restart "statefulset/${SHARINGIO_PAIR_USER,,}-humacs"
   echo "Please note: you will disconnect momentarily and will need to reconnect manually."
 }
+
+for NUM in $(seq 0 20); do
+    alias "w${NUM}"="tmate select-window -t ${NUM}"
+done
