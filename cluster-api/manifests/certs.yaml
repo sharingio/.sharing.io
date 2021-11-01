@@ -10,13 +10,11 @@ spec:
       name: letsencrypt-prod
     solvers:
       - dns01:
-          rfc2136:
-            tsigKeyName: pair
-            tsigAlgorithm: HMACMD5
-            tsigSecretSecretRef:
-              name: tsig-powerdns
-              key: powerdns
-            nameserver: ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+          # TODO set up webhook to write to CoreDNS's etcd
+          webhook:
+            groupName: ""
+            solverName: ""
+            config: {}
         selector:
           dnsNames:
             - "*.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
@@ -26,7 +24,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: letsencrypt-prod
-  namespace: powerdns
+  namespace: ${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}
 spec:
   secretName: letsencrypt-prod
   issuerRef:
