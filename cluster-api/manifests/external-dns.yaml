@@ -119,4 +119,4 @@ spec:
             - name: EXTERNAL_DNS_PDNS_TLS_ENABLED
               value: "0"
             - name: ETCD_URLS
-              value: http://coredns-etcd-client.pair-system:2379
+              value: http://etcd-client.pair-system:2379
