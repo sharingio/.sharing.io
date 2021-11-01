@@ -85,7 +85,7 @@ spec:
             - --source=ingress
             - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
             - --crd-source-kind=DNSEndpoint
-            - --provider=pdns
+            - --provider=coredns
             - --policy=sync
             - --registry=txt
             - --interval=10s
@@ -118,3 +118,5 @@ spec:
                   key: pdns-api-key
             - name: EXTERNAL_DNS_PDNS_TLS_ENABLED
               value: "0"
+            - name: ETCD_URLS
+              value: http://coredns-etcd-client.pair-system:2379
