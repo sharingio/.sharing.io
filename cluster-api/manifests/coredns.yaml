@@ -48,17 +48,23 @@ spec:
               stubzones
               path /skydns
               endpoint http://etcd-client:2379
-          - name: template
-            parameters: IN SOA ${SHARINGIO_PAIR_BASE_DNS_NAME}
-            configBlock: |-
-              answer "ns1.${SHARINGIO_PAIR_BASE_DNS_NAME} 60 IN SOA ns1.${SHARINGIO_PAIR_BASE_DNS_NAME} hostmaster.${SHARINGIO_PAIR_BASE_DNS_NAME}. 11 60 60 60 60"
+          # respond to A record ns1.my.pair.sharing.io
           - name: template
             parameters: IN A ${SHARINGIO_PAIR_BASE_DNS_NAME}
             configBlock: |-
               match "ns1.${SHARINGIO_PAIR_BASE_DNS_NAME}"
               answer "{{ .Name }} 60 IN A ${SHARINGIO_PAIR_LOAD_BALANCER_IP}"
+              fallthrough
+          # response to NS record to point to A IN ns1.my.pair.sharing.io
           - name: template
             parameters: IN NS ${SHARINGIO_PAIR_BASE_DNS_NAME}
             configBlock: |-
               match "${SHARINGIO_PAIR_BASE_DNS_NAME}"
               answer "{{ .Name }} 60 IN NS ns1.${SHARINGIO_PAIR_BASE_DNS_NAME}"
+              fallthrough
+          # set host authority with NS IN ns1.my.pair.sharing.io as nameserver
+          - name: template
+            parameters: IN SOA ${SHARINGIO_PAIR_BASE_DNS_NAME}
+            configBlock: |-
+              answer "ns1.${SHARINGIO_PAIR_BASE_DNS_NAME} 60 IN SOA ns1.${SHARINGIO_PAIR_BASE_DNS_NAME} hostmaster.${SHARINGIO_PAIR_BASE_DNS_NAME}. 11 60 60 60 60"
+              fallthrough
