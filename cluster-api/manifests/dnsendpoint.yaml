@@ -5,6 +5,11 @@ metadata:
   namespace: "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}"
 spec:
   endpoints:
+    - dnsName: "ns1.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
+      recordTTL: 60
+      recordType: A
+      targets:
+        - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
     - dnsName: "$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
       recordTTL: 60
       recordType: A
