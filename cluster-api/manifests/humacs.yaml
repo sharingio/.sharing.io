@@ -48,6 +48,8 @@ spec:
         value: "$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
       - name: GITHUB_TOKEN
         value: "$SHARINGIO_PAIR_INSTANCE_SETUP_GITHUBOAUTHTOKEN"
+      - name: MULTIPLEX_URL
+        value: "https://multiplex.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
       $SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
     extraVolumes:
       - name: home-ii
