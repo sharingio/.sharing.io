@@ -29,13 +29,14 @@ fi
 . <(sudo cat "${ENV_FILE}" | tr -d '\r')
 
 NAMESPACES=(
-    powerdns
-    external-dns
-    metallb
-    nginx-ingress
-    helm-operator
-    kube-prometheus
-    $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
+  default
+  powerdns
+  external-dns
+  metallb
+  nginx-ingress
+  helm-operator
+  kube-prometheus
+  $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
 )
 
 # use kubeconfig
@@ -63,7 +64,9 @@ done
 
 # create namespaces
 for NAMESPACE in ${NAMESPACES[*]}; do
-    kubectl create namespace $NAMESPACE
+    kubectl create namespace $NAMESPACE --dry-run=client -o yaml \
+      | kubectl apply -f -
+    kubectl label ns "${NS}" cert-manager-tls=sync
 done
 # allow scheduling
 kubectl taint node --all node-role.kubernetes.io/master-
@@ -90,7 +93,6 @@ envsubst < ./manifests/metrics-server.yaml | kubectl apply -f -
 envsubst < ./manifests/kubed.yaml | kubectl apply -f -
 
 # Humacs
-kubectl label ns "$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE" cert-manager-tls=sync
 envsubst < ./manifests/humacs-pvc.yaml | kubectl apply -f -
 envsubst < ./manifests/humacs.yaml | kubectl apply -f -
 
@@ -106,7 +108,6 @@ envsubst < ./manifests/humacs.yaml | kubectl apply -f -
 
   # prometheus + grafana
   envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
-  kubectl label ns kube-prometheus cert-manager-tls=sync
 
   # www
   envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
