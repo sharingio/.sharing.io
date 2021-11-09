@@ -64,9 +64,9 @@ done
 
 # create namespaces
 for NAMESPACE in ${NAMESPACES[*]}; do
-    kubectl create namespace $NAMESPACE --dry-run=client -o yaml \
+    kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml \
       | kubectl apply -f -
-    kubectl label ns "${NS}" cert-manager-tls=sync
+    kubectl label ns "${NAMESPACE}" cert-manager-tls=sync
 done
 # allow scheduling
 kubectl taint node --all node-role.kubernetes.io/master-
