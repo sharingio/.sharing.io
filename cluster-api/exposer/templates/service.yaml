@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.ServiceName }}
+  labels:
+    io.sharing.pair/managed: "true"
+    io.sharing.pair/port: "{{ $.Port }}"
+    io.sharing.pair/pid: "{{ $.Pid }}"
+spec:
+  externalIPs:
+    - {{ $.ExternalIP }}
+  ports:
+    - name: {{ $.Name }}
+      port: {{ $.ServicePort }}
+      protocol: {{ $.Protocol }}
+      targetPort: {{ $.Port }}
+  selector:{{ range $key, $value := $.PodLabels }}
+    {{ $key }}: {{ $value }}{{ end }}
+  type: ClusterIP

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: $svcName
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  labels:
+    io.sharing.pair/managed: "true"
+    io.sharing.pair/port: "{{ $.Port }}"
+    io.sharing.pair/pid: "{{ $.Pid }}"
+spec:
+  rules:
+    - host: {{ $.IngressHost }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ $.ServiceName }}
+              servicePort: {{ $.ServicePort }}
+            pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - {{ $.IngressHost }}
+      secretName: letsencrypt-prod
