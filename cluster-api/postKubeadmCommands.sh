@@ -228,5 +228,3 @@ time (
       sleep 1
   done
 )
-kubectl -n powerdns annotate secret letsencrypt-prod kubed.appscode.com/sync=cert-manager-tls --overwrite
-
