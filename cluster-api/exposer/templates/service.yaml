@@ -7,6 +7,7 @@ metadata:
     io.sharing.pair/managed: "true"
     io.sharing.pair/port: "{{ $.Port }}"
     io.sharing.pair/pid: "{{ $.Pid }}"
+    io.sharing.pair/uid: "{{ $.Uid }}"
 spec:
   externalIPs:
     - {{ $.ExternalIP }}
