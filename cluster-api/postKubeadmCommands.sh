@@ -36,6 +36,7 @@ NAMESPACES=(
   nginx-ingress
   helm-operator
   kube-prometheus
+  pair-system
   $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
 )
 
@@ -92,17 +93,17 @@ envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system ap
 envsubst < ./manifests/metrics-server.yaml | kubectl apply -f -
 envsubst < ./manifests/kubed.yaml | kubectl apply -f -
 
-# Humacs
-envsubst < ./manifests/humacs-pvc.yaml | kubectl apply -f -
-envsubst < ./manifests/humacs.yaml | kubectl apply -f -
+# Environment
+envsubst < ./manifests/environment.yaml | kubectl apply -f -
+envsubst < ./manifests/environment-exposer.yaml | kubectl apply -f -
 
 (
-  echo "Waiting until Humacs is ready"
-  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" wait pod --for=condition=Ready --selector=app.kubernetes.io/name=humacs --timeout=10s; do
+  echo "Waiting until the environment is ready"
+  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" wait pod --for=condition=Ready --selector=app=environment --timeout=10s; do
     sleep 1s
   done
   echo "Waiting until nginx-ingress admission webhook is available"
-  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" exec -it "statefulset/${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}-humacs" -- nc -zv nginx-ingress-ingress-nginx-controller-admission.nginx-ingress.svc 443; do
+  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" exec -it "statefulset/environment" -c environment -- nc -zv nginx-ingress-ingress-nginx-controller-admission.nginx-ingress.svc 443; do
     sleep 1s
   done
 
