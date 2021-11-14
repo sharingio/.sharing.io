@@ -131,13 +131,12 @@ spec:
           name: var-run-docker-sock
         - hostPath:
             path: /tmp
-            type: ""
           name: tmp
         - name: home-ii
-          emptyDir: {}
+          hostPath:
+            path: /home/ii
         - hostPath:
             path: /
-            type: ""
           name: host
         - name: podlabels
           downwardAPI:

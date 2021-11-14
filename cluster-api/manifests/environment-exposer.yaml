@@ -60,6 +60,8 @@ spec:
       serviceAccountName: environment-exposer
       nodeSelector:
         node-role.kubernetes.io/control-plane: ""
+      securityContext:
+        fsGroup: 1000
       containers:
         - name: environment-exposer
           image: registry.gitlab.com/sharingio/environment/exposer:2021.11.12.1719
@@ -71,16 +73,17 @@ spec:
             allowPrivilegeEscalation: false
           env:
             - name: APP_EXPORTER_ENDPOINT
-              value: http://environment-exporter.default:10093
+              value: "http://environment-exporter.${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}:10093"
             - name: APP_EXTERNAL_IP
               value: ${KUBERNETES_CONTROLPLANE_ENDPOINT}
-            - name: APP_ENVIRONMENT_DEFAULT_NAMESPACE
+            - name: APP_ENVIRONMENT_NAMESPACE
               value: "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}"
             - name: APP_ENVIRONMENT_BASE_DOMAIN
               value: ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
           volumeMounts:
             - name: template-folder
               mountPath: /home/ii/.sharing.io/cluster-api/exposer/templates
+              readOnly: true
       volumes:
         - name: template-folder
           hostPath:
