@@ -60,8 +60,10 @@ spec:
               value: /home/ii
             - name: INIT_PREFINISH_BLOCK
               value: |
-                git clone "https://github.com/${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}/.sharing.io" || \
-                  git clone https://github.com/sharingio/.sharing.io
+                if [ ! -d "/home/ii/.sharing.io" ]; then
+                  git clone "https://github.com/${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}/.sharing.io" || \
+                    git clone https://github.com/sharingio/.sharing.io
+                fi
 
                 . /home/ii/.sharing.io/sharingio-pair-preinit-script.sh
             - name: SHARINGIO_PAIR_NAME

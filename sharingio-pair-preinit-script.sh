@@ -16,8 +16,10 @@ done
 (
     ./.sharing.io/init || true
 ) &
-git clone "https://github.com/$SHARINGIO_PAIR_USER/.doom.d" || \
+if [ ! -d /home/ii/.doom.d ]; then
+  git clone "https://github.com/$SHARINGIO_PAIR_USER/.doom.d" || \
     git clone https://github.com/humacs/.doom.d
+fi
 (
     cd $HOME/.doom.d
     rm *.el
