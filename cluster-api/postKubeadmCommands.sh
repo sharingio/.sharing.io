@@ -95,7 +95,6 @@ envsubst < ./manifests/kubed.yaml | kubectl apply -f -
 
 # Environment
 envsubst < ./manifests/environment.yaml | kubectl apply -f -
-envsubst < ./manifests/environment-exposer.yaml | kubectl apply -f -
 
 (
   echo "Waiting until the environment is ready"
@@ -106,6 +105,9 @@ envsubst < ./manifests/environment-exposer.yaml | kubectl apply -f -
   until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" exec -it "statefulset/environment" -c environment -- nc -zv nginx-ingress-ingress-nginx-controller-admission.nginx-ingress.svc 443; do
     sleep 1s
   done
+
+  # Environment Exposer
+  envsubst < ./manifests/environment-exposer.yaml | kubectl apply -f -
 
   # prometheus + grafana
   envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
