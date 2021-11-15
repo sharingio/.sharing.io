@@ -82,9 +82,9 @@ spec:
               value: ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
           volumeMounts:
             - name: template-folder
-              mountPath: /home/ii/.sharing.io/cluster-api/exposer/templates
+              mountPath: /home/ii/
               readOnly: true
       volumes:
         - name: template-folder
           hostPath:
-            path: /home/ii/.sharing.io/cluster-api/exposer/templates
+            path: /home/ii/
