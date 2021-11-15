@@ -2,7 +2,7 @@ apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 metadata:
   name: public-html
-  namespace: $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
+  namespace: pair-system
 spec:
   releaseName: public-html
   chart:
