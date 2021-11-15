@@ -69,7 +69,7 @@ spec:
             - name: SHARINGIO_PAIR_NAME
               value: "${SHARINGIO_PAIR_INSTANCE_NAME}"
             - name: SHARINGIO_PAIR_USER
-              value: "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}"
+              value: "${SHARINGIO_PAIR_INSTANCE_SETUP_USER}"
             - name: SHARINGIO_PAIR_GUEST_NAMES
               value: "${SHARINGIO_PAIR_INSTANCE_SETUP_GUESTS}"
             - name: SHARINGIO_PAIR_KUBERNETES_CONTROLPLANE_ENDPOINT
