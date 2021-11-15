@@ -4,7 +4,7 @@ metadata:
   labels:
     app: reveal-multiplex
   name: reveal-multiplex
-  namespace: $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
+  namespace: pair-system
 spec:
   replicas: 1
   selector:
@@ -49,7 +49,7 @@ metadata:
   labels:
     app: reveal-multiplex
   name: reveal-multiplex
-  namespace: $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
+  namespace: pair-system
 spec:
   ports:
     - name: http
@@ -67,7 +67,7 @@ metadata:
   labels:
     app: reveal-multiplex
   name: reveal-multiplex
-  namespace: $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
+  namespace: pair-system
 spec:
   rules:
     - host: multiplex.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
