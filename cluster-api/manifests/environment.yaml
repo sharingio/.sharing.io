@@ -79,7 +79,7 @@ spec:
             - name: MULTIPLEX_URL
               value: "https://multiplex.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
             $SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
-          image: registry.gitlab.com/sharingio/environment:2021.11.15.1612
+          image: registry.gitlab.com/sharingio/environment/environment:2021.11.15.1612
           imagePullPolicy: IfNotPresent
           name: environment
           volumeMounts:
