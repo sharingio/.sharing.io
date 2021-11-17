@@ -26,7 +26,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: letsencrypt-prod
-  namespace: powerdns
+  namespace: "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}"
 spec:
   secretName: letsencrypt-prod
   issuerRef:
