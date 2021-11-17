@@ -129,7 +129,12 @@ data:
   enable-bandwidth-manager: "false"
   enable-local-redirect-policy: "false"
 
-  kube-proxy-replacement:  "disabled"
+  kube-proxy-replacement:  "partial"
+  kube-proxy-replacement-healthz-bind-address: ""
+  enable-host-reachable-services: "true"
+  enable-host-port: "true"
+  enable-external-ips: "true"
+  enable-node-port: "true"
   enable-health-check-nodeport: "true"
   node-port-bind-protection: "true"
   enable-auto-protect-node-port-range: "true"
@@ -150,9 +155,7 @@ data:
   hubble-tls-cert-file: /var/lib/cilium/tls/hubble/server.crt
   hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
-  ipam: "cluster-pool"
-  cluster-pool-ipv4-cidr: "10.0.0.0/8"
-  cluster-pool-ipv4-mask-size: "24"
+  ipam: "kubernetes"
   disable-cnp-status-updates: "true"
   cgroup-root: "/run/cilium/cgroupv2"
 ---
@@ -573,6 +576,13 @@ spec:
             name: cni-path
         securityContext:
           privileged: true
+      - name: wait-for-node-init
+        command: ['sh', '-c', 'until stat /tmp/cilium-bootstrap-time > /dev/null 2>&1; do echo "Waiting on node-init to run..."; sleep 1; done']
+        image: "quay.io/cilium/cilium:v1.10.5@sha256:0612218e28288db360c63677c09fafa2d17edda4f13867bcabf87056046b33bb"
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /tmp/cilium-bootstrap-time
+          name: cilium-bootstrap-file
       - command:
         - /init-container.sh
         env:
@@ -656,6 +666,10 @@ spec:
           path: /run/xtables.lock
           type: FileOrCreate
         name: xtables-lock
+      - hostPath:
+          path: /tmp/cilium-bootstrap-time
+          type: FileOrCreate
+        name: cilium-bootstrap-file
         # To read the clustermesh configuration
       - name: clustermesh-secrets
         secret:
@@ -679,6 +693,72 @@ spec:
                 - key: tls.key
                   path: server.key
               optional: true
+---
+# Source: cilium/templates/cilium-nodeinit-daemonset.yaml
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: cilium-node-init
+  namespace: kube-system
+  labels:
+    app: cilium-node-init
+spec:
+  selector:
+    matchLabels:
+      app: cilium-node-init
+  template:
+    metadata:
+      annotations:
+      labels:
+        app: cilium-node-init
+    spec:
+      tolerations:
+      - operator: Exists
+      hostPID: true
+      hostNetwork: true
+      priorityClassName: system-node-critical
+      containers:
+        - name: node-init
+          image: quay.io/cilium/startup-script:62bfbe88c17778aad7bef9fa57ff9e2d4a9ba0d8
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+          - name: CHECKPOINT_PATH
+            value: /tmp/node-init.cilium.io
+          # STARTUP_SCRIPT is the script run on node bootstrap. Node
+          # bootstrapping can be customized in this script. This script is invoked
+          # using nsenter, so it runs in the host's network and mount namespace using
+          # the host's userland tools!
+          - name: STARTUP_SCRIPT
+            value: |
+              #!/bin/bash
+
+              set -o errexit
+              set -o pipefail
+              set -o nounset
+
+              echo "Link information:"
+              ip link
+
+              echo "Routing table:"
+              ip route
+
+              echo "Addressing:"
+              ip -4 a
+              ip -6 a
+              date > /tmp/cilium-bootstrap-time
+
+              # AKS: If azure-vnet is installed on the node, and (still) configured in bridge mode,
+              # configure it as 'transparent' to be consistent with Cilium's CNI chaining config.
+              # If the azure-vnet CNI config is not removed, kubelet will execute CNI CHECK commands
+              # against it every 5 seconds and write 'bridge' to its state file, causing inconsistent
+              # behaviour when Pods are removed.
+              if [ -f /etc/cni/net.d/10-azure.conflist ]; then
+                echo "Ensuring azure-vnet is configured in 'transparent' mode..."
+                sed -i 's/"mode":\s*"bridge"/"mode":"transparent"/g' /etc/cni/net.d/10-azure.conflist
+              fi
+              echo "Node initialization complete"
 ---
 # Source: cilium/templates/cilium-operator-deployment.yaml
 apiVersion: apps/v1
