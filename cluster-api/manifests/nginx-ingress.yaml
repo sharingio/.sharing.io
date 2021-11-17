@@ -37,3 +37,4 @@ spec:
           metallb.universe.tf/allow-shared-ip: nginx-ingress
         externalIPs:
           - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+          - ${MACHINE_IP}

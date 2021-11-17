@@ -121,21 +121,6 @@ export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
 # nginx-ingress-controller
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
-(
-  time (
-    until kubectl -n nginx-ingress get deployment nginx-ingress-ingress-nginx-controller; do
-        echo "waiting for nginx-ingress deployment"
-        sleep 5s
-    done
-  )
-  time (
-    until kubectl -n nginx-ingress get svc nginx-ingress-ingress-nginx-controller; do
-      sleep 1s
-    done
-  )
-  echo true > /tmp/.sharingio-pair-init-ready-nginx-ingress
-  kubectl -n nginx-ingress patch svc nginx-ingress-ingress-nginx-controller -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
-) &
 
 # Instance managed DNS
 kubectl apply -f ./manifests/external-dns-crd.yaml
