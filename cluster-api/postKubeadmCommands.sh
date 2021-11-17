@@ -143,7 +143,6 @@ envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
 kubectl -n external-dns create secret generic external-dns-pdns \
     --from-literal=domain-filter="$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME" \
     --from-literal=txt-owner-id="$SHARINGIO_PAIR_INSTANCE_SETUP_USER" \
-    --from-literal=pdns-server=http://powerdns-service-api.powerdns:8081 \
     --from-literal=pdns-api-key=pairingissharing
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
