@@ -19,9 +19,10 @@ Cert-Manager
 curl -o ./manifests/cert-manager.yaml -L https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
 #+end_src
 
-WeaveNet
+Cilium
 #+begin_src shell
-curl -o ./manifests/weavenet.yaml -L "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE=192.168.0.0/16"
+helm repo add cilium https://helm.cilium.io/
+helm template cilium cilium/cilium --version 1.10.5 --namespace kube-system > ./manifests/cilium.yaml
 #+end_src
 
 Helm-Operator
