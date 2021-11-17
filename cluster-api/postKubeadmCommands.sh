@@ -123,8 +123,8 @@ export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTAN
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 
 # Instance managed DNS
-kubectl apply -f ./manifests/external-dns-crd.yaml
-envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
+kubectl apply -f ./manifests/external-dns-crd.yaml && \
+envsubst < ./manifests/external-dns.yaml | kubectl apply -f - && \
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
 envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
