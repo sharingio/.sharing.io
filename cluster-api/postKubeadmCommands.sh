@@ -101,7 +101,7 @@ kubectl patch storageclasses.storage.k8s.io local-path -p '{"metadata": {"annota
 # handy things
 kubectl apply -f ./manifests/external-dns-crd.yaml
 kubectl apply -f ./manifests/cert-manager.yaml
-kubectl apply -f ./manifests/weavenet.yaml
+kubectl apply -f ./manifests/cilium.yaml
 kubectl apply -f ./manifests/helm-operator-crds.yaml
 kubectl -n helm-operator apply -f ./manifests/helm-operator.yaml
 kubectl get configmap kube-proxy -n kube-system -o yaml | sed -e "s/strictARP: false/strictARP: true/" | kubectl apply -f - -n kube-system
