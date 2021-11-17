@@ -4,6 +4,37 @@
 Configuration for Pair instances
 #+end_quote
 
+* What makes up a Pair instance
+A Pair instance contains many useful pieces of software for providing a CloudNative and in-cluster environment that suppliments the way that humans can collaborate.
+
+** Software
+Here's a list of software installed in the order that it is brought up
+
+- [[https://ubuntu.com/server][Ubuntu host OS]] :: this has limitations and is very much a full OS but works well and has fast initialisation support with Equinix Metal
+- [[https://www.openssh.com/][OpenSSH server]] :: allows for connection stability and forwarding of SSH keys
+- [[https://www.docker.com/][Docker CE]] + [[https://containerd.io/][containerd.io]] :: container runtime allows for image build and deploy when in-cluster
+- [[https://kubernetes.io][Kubernetes]] :: the kube
+- [[https://github.com/weaveworks/weave][WeaveNet CNI]] :: a CNI to provide networking
+- [[https://cert-manager.io][Cert-Manager]] :: manage LetsEncrypt and self-signed certs through Kubernetes
+- [[https://github.com/rancher/local-path-provisioner][Local-Path-Provisioner]] :: create PVCs, without external storage
+- [[https://github.com/fluxcd/helm-operator][Helm-Operator]] :: declaritively manage Helm charts
+- [[https://metallb.universe.tf/][MetalLB]] :: be assigned BGP IPs
+- [[https://github.com/kubernetes-sigs/metrics-server][Metrics-Server]] :: allow support for =kubectl top=
+- [[https://github.com/kubeops/kubed][Kubed]] :: sync secrets between namespaces
+- [[https://github.com/sharingio/environment][Environment]] :: a containerised environment with many tools useful for Pairing, such as tmate, Emacs, Kubernetes tuils, and development utilities
+- [[https://github.com/sharingio/environment/tree/master/cmd/environment-exporter][Environment-Exporter]] :: a webserver for serving a JSON list of processes that are listening on ports
+- [[https://github.com/kubernetes/ingress-nginx/][nginx-ingress-controller]] :: a Kubernetes ingress controller for bringing traffic into the cluster
+- [[https://github.com/kubernetes-sigs/external-dns][External-DNS]] :: a declarative way of managing DNS records
+- [[https://www.powerdns.com/][PowerDNS]] :: a DNS server to own the records for {name}.pair.sharing.io
+- [[https://github.com/sharingio/environment/tree/master/cmd/environment-exposer][Environment-Exposer]] :: a controller for mananging Kubernetes Service and Ingress resources based on the the results of environment-exporter, in order to expose the ports inside Environment to the public internet
+- [[https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack][Kube-Prometheus]] :: a deployment of Prometheus and Grafana. In Pair, it's deployed so that anyone can view it on grafana.{name}.pair.sharing.io
+- [[https://gitlab.com/safesurfer/go-http-server][go-http-server]] :: a HTTP server for sharing a folder. Shares =~/public_html= to www.{name}.pair.sharing.io
+- [[https://github.com/reveal/multiplex][Reveal-Multiplex]] :: a websocket server for Reveal to enable presentation multiplexing. Available on multiplex.{name}.pair.sharing.io
+
+** Configuration
+- full controller over DNS records for and under {name}.pair.sharing.io
+- TLS on supplied domains with wildcard support
+
 * Structure
 - [[./sharingio-pair-preinit-script.sh][sharingio-pair-preinit-script.sh]] :: a script that's runs after all repos are cloned
 - [[./init][init]] :: a standard repo init script, this one adds several niceities
