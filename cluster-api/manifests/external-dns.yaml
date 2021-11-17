@@ -95,27 +95,7 @@ spec:
             - --managed-record-types=NS
             - --managed-record-types=TXT
             - --managed-record-types=SRV
+            - --domain-filter="${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
+            - --txt-owner-id="${SHARINGIO_PAIR_INSTANCE_SETUP_USER}"
+            - --pdns-api-key=pairingissharing
             - --pdns-server=http://powerdns-service-api.pair-system:8081
-          env:
-            - name: EXTERNAL_DNS_DOMAIN_FILTER
-              valueFrom:
-                secretKeyRef:
-                  name: external-dns-pdns
-                  key: domain-filter
-            - name: EXTERNAL_DNS_TXT_OWNER_ID
-              valueFrom:
-                secretKeyRef:
-                  name: external-dns-pdns
-                  key: txt-owner-id
-            - name: EXTERNAL_DNS_PDNS_SERVER
-              valueFrom:
-                secretKeyRef:
-                  name: external-dns-pdns
-                  key: pdns-server
-            - name: EXTERNAL_DNS_PDNS_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: external-dns-pdns
-                  key: pdns-api-key
-            - name: EXTERNAL_DNS_PDNS_TLS_ENABLED
-              value: "0"
