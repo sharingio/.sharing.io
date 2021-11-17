@@ -1,0 +1,53 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: powerdns
+  namespace: pair-system
+spec:
+  releaseName: powerdns
+  chart:
+    name: powerdns
+    repository: https://raw.githubusercontent.com/sharingio/helm-charts/gh-pages/
+    version: 0.1.12
+  values:
+    image:
+      tag: 4.3-alpine
+    domain: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+    default_soa_name: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+    powerdns:
+      default_ttl: 60
+      soa_minimum_ttl: 60
+      domain: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+      mysql_host: powerdns-service-db
+      mysql_user: powerdns
+      extraEnv:
+        - name: PDNS_dnsupdate
+          value: "yes"
+        - name: PDNS_allow_dnsupdate_from
+          value: "192.168.0.0/24"
+    service:
+      dns:
+        tcp:
+          enabled: true
+          externalIPs:
+            - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+          annotations:
+            metallb.universe.tf/allow-shared-ip: nginx-ingress
+        udp:
+          externalIPs:
+            - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+          annotations:
+            metallb.universe.tf/allow-shared-ip: nginx-ingress
+    mariadb:
+      image:
+        repository: linuxserver/mariadb
+        tag: alpine-version-10.5.12-r0
+      args: []
+      mysql_pass: pairingissharing
+      mysql_rootpass: pairingissharing
+    admin:
+      enabled: false
+      ingress:
+        enabled: false
+      secret: pairingissharing
+    apikey: pairingissharing

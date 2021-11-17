@@ -1,53 +1,180 @@
-apiVersion: helm.fluxcd.io/v1
-kind: HelmRelease
+---
+apiVersion: v1
+kind: Secret
 metadata:
+  labels:
+    app.kubernetes.io/name: powerdns-secret
+    app.kubernetes.io/part-of: powerdns
+  name: powerdns-secret
+  namespace: pair-system
+stringData:
+  apikey: pairingissharing
+  webserver: pairingissharing
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: powerdns
+    app.kubernetes.io/part-of: powerdns
   name: powerdns
   namespace: pair-system
 spec:
-  releaseName: powerdns
-  chart:
-    name: powerdns
-    repository: https://raw.githubusercontent.com/sharingio/helm-charts/gh-pages/
-    version: 0.1.12
-  values:
-    image:
-      tag: 4.3-alpine
-    domain: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
-    default_soa_name: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
-    powerdns:
-      default_ttl: 60
-      soa_minimum_ttl: 60
-      domain: $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
-      mysql_host: powerdns-service-db
-      mysql_user: powerdns
-      extraEnv:
-        - name: PDNS_dnsupdate
-          value: "yes"
-        - name: PDNS_allow_dnsupdate_from
-          value: "192.168.0.0/24"
-    service:
-      dns:
-        tcp:
-          enabled: true
-          externalIPs:
-            - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
-          annotations:
-            metallb.universe.tf/allow-shared-ip: nginx-ingress
-        udp:
-          externalIPs:
-            - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
-          annotations:
-            metallb.universe.tf/allow-shared-ip: nginx-ingress
-    mariadb:
-      image:
-        repository: linuxserver/mariadb
-        tag: alpine-version-10.5.12-r0
-      args: []
-      mysql_pass: pairingissharing
-      mysql_rootpass: pairingissharing
-    admin:
-      enabled: false
-      ingress:
-        enabled: false
-      secret: pairingissharing
-    apikey: pairingissharing
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: powerdns
+      app.kubernetes.io/part-of: powerdns
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: powerdns
+        app.kubernetes.io/part-of: powerdns
+    spec:
+      containers:
+        - image: pschiffe/pdns-mysql:4.4-alpine
+          imagePullPolicy: IfNotPresent
+          name: powerdns
+          env:
+            - name: MYSQL_ENV_MYSQL_HOST
+              value: "mariadb-pdns"
+            - name: MYSQL_ENV_MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_ENV_MYSQL_USERNMAE
+              valueFrom:
+                secretKeyRef:
+                  name: powerdns-mariadb-secret
+                  key: username
+            - name: MYSQL_ENV_MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: powerdns-mariadb-secret
+                  key: password
+            - name: MYSQL_ENV_MYSQL_DATABASE
+              value: "master_"
+            - name: POWERDNS_version_string
+              value: "anonymous"
+            - name: POWERDNS_master
+              value: "yes"
+            - name: POWERDNS_api
+              value: "yes"
+            - name: POWERDNS_api_key
+              valueFrom:
+                secretKeyRef:
+                  name: powerdns-secret
+                  key: apikey
+            - name: POWERDNS_webserver
+              value: "yes"
+            - name: POWERDNS_webserver_address
+              value: "0.0.0.0"
+            - name: POWERDNS_webserver_allow_from
+              value: "0.0.0.0/0"
+            - name: POWERDNS_webserver_password
+              valueFrom:
+                secretKeyRef:
+                  name: powerdns-secret
+                  key: webserver
+            - name: POWERDNS_default_ttl
+              value: "60"
+            - name: POWERDNS_soa_minimum_ttl
+              value: "60"
+            - name: POWERDNS_default_soa_name
+              value: "${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
+            - name: POWERDNS_default_soa_mail
+              value: "hostmaster.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
+            - name: POWERDNS_allow_axfr_ips
+              value: "10.0.0.2 10.0.0.3"
+            - name: POWERDNS_only_notify
+              value: "10.0.0.2 10.0.0.3"
+            - name: POWERDNS_dnsupdate
+              value: "yes"
+            - name: POWERDNS_allow_dnsupdate_from
+              value: "192.168.0.0/24"
+          resources:
+            limits:
+              cpu: 300m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "a=0;while [ $a -lt 200 ];do sleep 1;a=$[a+1];echo 'stage: '$a;if
+                    nc -vz powerdns-service-db 3306;then (! pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME})
+                    && pdnsutil create-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME};echo 'End
+                    Stage';a=200;fi;done"
+          ports:
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+            - containerPort: 8081
+              protocol: TCP
+      dnsPolicy: ClusterFirstWithHostNet
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: powerdns-dns-tcp
+    app.kubernetes.io/part-of: powerdns
+  name: powerdns-tcp
+  namespace: pair-system
+spec:
+  type: ClusterIP
+  externalIPs:
+    - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+    - ${MACHINE_IP}
+  ports:
+    - port: 53
+      targetPort: 53
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: powerdns
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: powerdns-dns-udp
+    app.kubernetes.io/part-of: powerdns
+  name: powerdns-udp
+  namespace: pair-system
+spec:
+  type: ClusterIP
+  externalIPs:
+    - ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+    - ${MACHINE_IP}
+  ports:
+    - port: 53
+      targetPort: 53
+      protocol: UDP
+  selector:
+    app.kubernetes.io/name: powerdns
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: powerdns-api
+    app.kubernetes.io/part-of: powerdns
+  name: powerdns-api
+  namespace: pair-system
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8081
+      targetPort: 8081
+  selector:
+    app.kubernetes.io/name: powerdns

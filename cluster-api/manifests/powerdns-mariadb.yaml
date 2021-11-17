@@ -1,0 +1,108 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/name: powerdns-mariadb-pvc
+    app.kubernetes.io/part-of: pdns
+    app.kubernetes.io/component: mariadb
+  name: powerdns-mariadb-pvc
+  namespace: pair-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/name: powerdns-mariadb-secret
+    app.kubernetes.io/part-of: pdns
+    app.kubernetes.io/component: mariadb
+  name: powerdns-mariadb-secret
+  namespace: pair-system
+stringData:
+  username: mariadb
+  password: pairingissharing
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: mariadb-pdns
+    app.kubernetes.io/part-of: pdns
+    app.kubernetes.io/component: mariadb
+  name: mariadb-pdns
+  namespace: pair-system
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mariadb-pdns
+      app.kubernetes.io/part-of: pdns
+      app.kubernetes.io/component: mariadb
+  serviceName: mariadb-pdns
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mariadb-pdns
+        app.kubernetes.io/part-of: pdns
+        app.kubernetes.io/component: mariadb
+    spec:
+      containers:
+        - name: mariadb-pdns
+          image: linuxserver/mariadb:alpine-version-10.5.12-r0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: powerdns-mariadb-secret
+                  key: password
+            - name: MYSQL_DATABASE
+              value: powerdns
+            - name: MYSQL_USER
+              value: powerdns
+            - name: MYSQL_INITDB_SKIP_TZINFO
+              value: "1"
+          volumeMounts:
+            - name: powerdns-mariadb-storage
+              mountPath: /var/lib/mysql
+          ports:
+            - containerPort: 3306
+          resources:
+            limits:
+              cpu: 300m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+      volumes:
+        - name: powerdns-mariadb-storage
+          persistentVolumeClaim:
+            claimName: powerdns-mariadb-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: powerdns-mariadb-svc
+    app.kubernetes.io/part-of: pdns
+    app.kubernetes.io/component: mariadb
+  name: mariadb-pdns
+  namespace: pair-system
+spec:
+  ports:
+    - name: tcp-mysql
+      port: 3306
+      protocol: TCP
+      targetPort: 3306
+  selector:
+    app.kubernetes.io/name: mariadb-pdns
+  sessionAffinity: None
+  type: ClusterIP
