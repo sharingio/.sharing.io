@@ -140,10 +140,6 @@ envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 # Instance managed DNS
 kubectl apply -f ./manifests/external-dns-crd.yaml
 envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
-kubectl -n external-dns create secret generic external-dns-pdns \
-    --from-literal=domain-filter="$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME" \
-    --from-literal=txt-owner-id="$SHARINGIO_PAIR_INSTANCE_SETUP_USER" \
-    --from-literal=pdns-api-key=pairingissharing
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
 envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
