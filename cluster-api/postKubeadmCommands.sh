@@ -127,7 +127,7 @@ kubectl apply -f ./manifests/external-dns-crd.yaml && \
 envsubst < ./manifests/external-dns.yaml | kubectl apply -f - && \
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
-envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
+envsubst '${KUBERNETES_CONTROLPLANE_ENDPOINT} ${MACHINE_IP} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${KUBERNETES_CONTROLPLANE_ENDPOINT}' < ./manifests/powerdns.yaml | kubectl apply -f -
 
 time (
   until [ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
