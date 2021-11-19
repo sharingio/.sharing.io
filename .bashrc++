@@ -16,4 +16,4 @@ for NUM in $(seq 0 20); do
     alias "w${NUM}"="tmate select-window -t ${NUM}"
 done
 
-alias sharingio-pair-load-init-env='. <(sudo cat /var/run/host/root/.sharing-io-pair-init.env)'
+alias sharingio-pair-load-init-env='. <(sudo cat {/var/run/host,}/root/.sharing-io-pair-init.env 2> /dev/null)'
