@@ -80,6 +80,7 @@ kubectl apply -f ./manifests/local-path-storage.yaml
 kubectl patch storageclasses.storage.k8s.io local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 # handy things
+kubectl apply -f ./manifests/external-dns-crd.yaml
 kubectl apply -f ./manifests/cert-manager.yaml
 kubectl apply -f ./manifests/weavenet.yaml
 kubectl apply -f ./manifests/helm-operator-crds.yaml
@@ -123,8 +124,7 @@ export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTAN
 envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 
 # Instance managed DNS
-kubectl apply -f ./manifests/external-dns-crd.yaml && \
-envsubst < ./manifests/external-dns.yaml | kubectl apply -f - && \
+envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
 envsubst '${KUBERNETES_CONTROLPLANE_ENDPOINT} ${MACHINE_IP} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${KUBERNETES_CONTROLPLANE_ENDPOINT}' < ./manifests/powerdns.yaml | kubectl apply -f -
