@@ -96,38 +96,29 @@ envsubst < ./manifests/kubed.yaml | kubectl apply -f -
 # Environment
 envsubst < ./manifests/environment.yaml | kubectl apply -f -
 
-(
-  echo "Waiting until the environment is ready"
-  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" wait pod --for=condition=Ready --selector=app=environment --timeout=10s; do
-    sleep 1s
-  done
-  echo "Waiting until nginx-ingress admission webhook is available"
-  until kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" exec -it "statefulset/environment" -c environment -- nc -zv nginx-ingress-ingress-nginx-controller-admission.nginx-ingress.svc 443; do
-    sleep 1s
-  done
+# Environment Exposer
+envsubst < ./manifests/environment-exposer.yaml | kubectl apply -f -
 
-  # Environment Exposer
-  envsubst < ./manifests/environment-exposer.yaml | kubectl apply -f -
+# prometheus + grafana
+envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
 
-  # prometheus + grafana
-  envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
-
-  # www
-  envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
-  envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
-) &
+# www
+envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
+envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
 
 # scale the ingress controller across all the nodes
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_WORKER_NODES:-0}))
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
-# nginx-ingress-controller
-envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 
 # Instance managed DNS
 envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
+# PowerDNS
 envsubst '${KUBERNETES_CONTROLPLANE_ENDPOINT} ${MACHINE_IP} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${KUBERNETES_CONTROLPLANE_ENDPOINT}' < ./manifests/powerdns.yaml | kubectl apply -f -
+
+# nginx-ingress-controller
+envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
 
 time (
   until [ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
