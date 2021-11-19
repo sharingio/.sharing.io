@@ -519,7 +519,7 @@ spec:
                 done
               )
               time (
-                until kubectl -n pair-system exec deployment/powerdns -- pdnsutil list-tsig-keys pair > /dev/null 2>&1; do
+                until [ ! "$(kubectl -n pair-system exec deployment/powerdns -- pdnsutil list-tsig-keys pair | grep -E '^pair. hmac-md5. .*$')" = "" ]; do
                   sleep 1s
                 done
               )
