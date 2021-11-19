@@ -514,10 +514,16 @@ spec:
             allowPrivilegeEscalation: false
           command:
             - bash
+            - -x
             - -c
             - |
               time (
-                until kubectl -n pair-system exec deployment/powerdns -- pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}; do
+                until kubectl -n pair-system exec deployment/powerdns -- pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} > /dev/null 2>&1; do
+                  sleep 1s
+                done
+              )
+              time (
+                until kubectl -n pair-system exec deployment/powerdns -- pdnsutil list-tsig-keys pair > /dev/null 2>&1; do
                   sleep 1s
                 done
               )
