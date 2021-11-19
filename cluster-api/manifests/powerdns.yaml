@@ -273,10 +273,10 @@ spec:
                         pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} SOA-EDIT-DNSUPDATE EPOCH
                       fi
                       if ! pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} | grep -E "^${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.*60.*IN.*NS.*ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.$"; then
-                        pdnsutil add-record ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} NS 60 ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
+                        pdnsutil add-record ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} @ NS 60 ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
                       fi
                       if ! pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} | grep -E "^${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.*60.*IN.*A.*${KUBERNETES_CONTROLPLANE_ENDPOINT}$"; then
-                        pdnsutil add-record ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} A 60 ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+                        pdnsutil add-record ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} @ A 60 ${KUBERNETES_CONTROLPLANE_ENDPOINT}
                       fi
                       echo 'End Stage'
                       a=200
