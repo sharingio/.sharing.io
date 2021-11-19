@@ -128,59 +128,6 @@ envsubst < ./manifests/external-dns.yaml | kubectl apply -f - && \
 envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
 envsubst < ./manifests/powerdns.yaml | kubectl apply -f -
-(
-  time (
-    until kubectl -n pair-system get svc powerdns-service-dns-udp; do
-        echo "waiting for deployed PowerDNS Chart"
-        sleep 5s
-    done
-  )
-  kubectl -n pair-system patch svc powerdns-service-dns-udp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
-  kubectl -n pair-system patch svc powerdns-service-dns-tcp -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
-  time (
-    until kubectl -n pair-system wait pod --for=condition=Ready --selector=app.kubernetes.io/name=powerdns --timeout=10s; do
-      sleep 1s
-    done
-  )
-  time (
-    until kubectl -n pair-system exec deployment/powerdns -- pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}; do
-      sleep 1s
-    done
-  )
-  kubectl -n pair-system exec deployment/powerdns -- pdnsutil generate-tsig-key pair hmac-md5
-  kubectl -n pair-system exec deployment/powerdns -- pdnsutil activate-tsig-key ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} pair master
-  kubectl -n pair-system exec deployment/powerdns -- pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} TSIG-ALLOW-DNSUPDATE pair
-  kubectl -n pair-system exec deployment/powerdns -- pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} NOTIFY-DNSUPDATE 1
-  kubectl -n pair-system exec deployment/powerdns -- pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} SOA-EDIT-DNSUPDATE EPOCH
-  export POWERDNS_TSIG_SECRET="$(kubectl -n pair-system exec deployment/powerdns -- pdnsutil list-tsig-keys | grep pair | awk '{print $3}')"
-  time (
-    until dig "@${KUBERNETES_CONTROLPLANE_ENDPOINT}" "${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"; do
-      sleep 1s
-    done
-  )
-  time until [ "$(dig NS +short @${KUBERNETES_CONTROLPLANE_ENDPOINT} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.)" = "ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}." ]; do
-    nsupdate <<EOF
-server ${KUBERNETES_CONTROLPLANE_ENDPOINT} 53
-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
-update add ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}. 60 NS ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.
-key pair ${POWERDNS_TSIG_SECRET}
-send
-EOF
-    nsupdate <<EOF
-server ${KUBERNETES_CONTROLPLANE_ENDPOINT} 53
-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
-update add ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}. 60 A ${KUBERNETES_CONTROLPLANE_ENDPOINT}
-key pair ${POWERDNS_TSIG_SECRET}
-send
-EOF
-    sleep 1s
-  done
-  kubectl -n cert-manager create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET" --dry-run=client -o yaml | \
-    kubectl apply -f -
-  kubectl -n pair-system create secret generic tsig-powerdns --from-literal=powerdns="$POWERDNS_TSIG_SECRET" --dry-run=client -o yaml | \
-    kubectl apply -f -
-  echo true > /tmp/.sharingio-pair-init-ready-powerdns
-) &
 
 time (
   until [ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
@@ -189,14 +136,6 @@ time (
   done
 )
 envsubst < ./manifests/certs.yaml | kubectl apply -f -
-
-until (
-    [ "$(cat /tmp/.sharingio-pair-init-ready-powerdns 2> /dev/null)" = "true" ] && [ "$(cat /tmp/.sharingio-pair-init-ready-nginx-ingress 2> /dev/null)" = "true" ] \
-      || [ "$(cat /tmp/.sharingio-pair-init-force-ready 2> /dev/null)" = "true" ]
-  ); do
-  echo "Waiting for Powerdns and nginx-ingress to be ready"
-  sleep 1s
-done
 
 kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
 
