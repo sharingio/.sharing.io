@@ -264,23 +264,23 @@ spec:
                       echo 'stage: '$a
                       if nc -vz powerdns-service-db 3306; then
                         (! pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}) && pdnsutil create-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
-                        echo 'End Stage'
-                        a=200
                       fi
+                      if ! pdnsutil list-tsig-keys pair | grep -E 'pair..*'; then
+                        pdnsutil generate-tsig-key pair hmac-md5
+                        pdnsutil activate-tsig-key ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} pair master
+                        pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} TSIG-ALLOW-DNSUPDATE pair
+                        pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} NOTIFY-DNSUPDATE 1
+                        pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} SOA-EDIT-DNSUPDATE EPOCH
+                      fi
+                      if ! pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} | grep -E "^${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.*60.*IN.*NS.*ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.$"; then
+                        pdnsutil add-record ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} NS 60 ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
+                      fi
+                      if ! pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} | grep -E "^${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.*60.*IN.*A.*${KUBERNETES_CONTROLPLANE_ENDPOINT}$"; then
+                        pdnsutil add-record ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} A 60 ${KUBERNETES_CONTROLPLANE_ENDPOINT}
+                      fi
+                      echo 'End Stage'
+                      a=200
                     done
-                    if ! pdnsutil list-tsig-keys pair; then
-                      pdnsutil generate-tsig-key pair hmac-md5
-                      pdnsutil activate-tsig-key ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} pair master
-                      pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} TSIG-ALLOW-DNSUPDATE pair
-                      pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} NOTIFY-DNSUPDATE 1
-                      pdnsutil set-meta ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} SOA-EDIT-DNSUPDATE EPOCH
-                    fi
-                    if pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} | grep -E "^${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.*60.*IN.*NS.*ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.$"; then
-                      pdnsutil add-record ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} NS 60 ns1.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
-                    fi
-                    if pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} | grep -E "^${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}.*60.*IN.*A.*${KUBERNETES_CONTROLPLANE_ENDPOINT}$"; then
-                      pdnsutil add-record ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} A 60 ${KUBERNETES_CONTROLPLANE_ENDPOINT}
-                    fi
           # securityContext:
           #   runAsUser: 101
           #   runAsGroup: 100
