@@ -423,8 +423,6 @@ rules:
       - create
       - patch
       - update
-    resourceNames:
-      - tsig-powerdns
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -463,8 +461,6 @@ rules:
       - create
       - patch
       - update
-    resourceNames:
-      - tsig-powerdns
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
