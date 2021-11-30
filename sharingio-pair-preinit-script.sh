@@ -22,7 +22,7 @@ if [ ! -d /home/ii/.doom.d ]; then
 fi
 (
     cd $HOME/.doom.d
-    rm *.el
+    rm -f ./*.el
     DOOM_CONFIG_FILE=ii.org
     if [ -f "${SHARINGIO_PAIR_USER}.org" ]; then
         DOOM_CONFIG_FILE="${SHARINGIO_PAIR_USER}.org"
