@@ -1,0 +1,2 @@
+#!/bin/bash
+kubectl -n "$(kubectl -n default get configmap pair-instance -o=jsonpath="{.data.username}" | tr "[:upper:]" "[:lower:]")" exec -it statefulset/environment -- attach
