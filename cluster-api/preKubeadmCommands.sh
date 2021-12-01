@@ -117,4 +117,7 @@ EOF
 sysctl --system
 
 # add host overlay
-cp -v -r ../host/ /
+(
+  cd ../host
+  cp -v -r . /
+)
