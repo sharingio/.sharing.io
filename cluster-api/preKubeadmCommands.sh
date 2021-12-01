@@ -99,6 +99,13 @@ cat <<EOF > /etc/docker/daemon.json
   }
 }
 EOF
+
+# add the registry-mirrors field to the Docker configuration
+if [ -n "${SHARINGIO_PAIR_INSTANCE_CONTAINER_REGISTRY_MIRROR:-}" ]; then
+echo "$(jq --arg mirrorhost "${SHARINGIO_PAIR_INSTANCE_CONTAINER_REGISTRY_MIRROR:-}" '.["registry-mirrors"] |= [$mirrorhost]' < /var/run/host/etc/docker/daemon.json)" \
+  > /var/run/host/etc/docker/daemon.json
+fi
+
 systemctl daemon-reload
 systemctl enable docker
 systemctl start docker
