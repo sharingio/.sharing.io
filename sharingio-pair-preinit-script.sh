@@ -20,16 +20,17 @@ if [ ! -d /home/ii/.doom.d ]; then
   git clone "https://github.com/$SHARINGIO_PAIR_USER/.doom.d" || \
     git clone https://github.com/humacs/.doom.d
 fi
-(
-    cd $HOME/.doom.d
-    rm -f ./*.el
-    DOOM_CONFIG_FILE=ii.org
-    if [ -f "${SHARINGIO_PAIR_USER}.org" ]; then
-        DOOM_CONFIG_FILE="${SHARINGIO_PAIR_USER}.org"
-    fi
+
+DOOM_CONFIG_FILE=ii.org
+if [ -f "${SHARINGIO_PAIR_USER}.org" ]; then
+    DOOM_CONFIG_FILE="${SHARINGIO_PAIR_USER}.org"
+fi
+if [ -f "${SHARINGIO_PAIR_USER}.org" ]; then
+    rm -f "${HOME}"/.doom.d/*.el
     org-tangle "${DOOM_CONFIG_FILE}"
     doom sync
-)
+fi
+
 [ ! -e "$HOME/public_html" ] && \
   ln -s "$HOME/.sharing.io/public_html" "$HOME/public_html"
 if [ ! -f "$HOME/public_html/index.html" ]; then
