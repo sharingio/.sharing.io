@@ -72,8 +72,11 @@ done
 kubectl taint node --all node-role.kubernetes.io/master-
 
 # add packet-cloud-config for picking up some values later
-kubectl create secret generic -n kube-system packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}" --dry-run=client -o yaml | \
-  kubectl apply -f-
+kubectl -n kube-system create secret generic packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}" --dry-run=client -o yaml | \
+  kubectl apply -f -
+
+kubectl -n default create configmap pair-instance --from-literal=username="${SHARINGIO_PAIR_INSTANCE_SETUP_USER}" --dry-run=client -o yaml | \
+  kubectl apply -f -
 
 # setup host path storage
 kubectl apply -f ./manifests/local-path-storage.yaml
