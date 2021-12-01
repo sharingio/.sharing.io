@@ -25,7 +25,7 @@ DOOM_CONFIG_FILE=ii.org
 if [ -f "${SHARINGIO_PAIR_USER}.org" ]; then
     DOOM_CONFIG_FILE="${SHARINGIO_PAIR_USER}.org"
 fi
-if [ -f "${SHARINGIO_PAIR_USER}.org" ]; then
+if [ -f "${DOOM_CONFIG_FILE}" ]; then
     rm -f "${HOME}"/.doom.d/*.el
     org-tangle "${DOOM_CONFIG_FILE}"
     doom sync
