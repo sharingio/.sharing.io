@@ -103,12 +103,11 @@ EOF
 
 # add the registry-mirrors field to the Docker configuration
 if [ -n "${SHARINGIO_PAIR_INSTANCE_CONTAINER_REGISTRY_MIRRORS:-}" ]; then
-  echo "$(jq --arg mirrorhosts "${SHARINGIO_PAIR_INSTANCE_CONTAINER_REGISTRY_MIRRORS:-}" '.["registry-mirrors"] |= ($mirrorhosts | split(" "))' < /etc/docker/daemon.json)" > /etc/docker/daemon.json
+  echo "$(jq --arg mirrorhosts "${SHARINGIO_PAIR_INSTANCE_CONTAINER_REGISTRY_MIRRORS:-}" '.["registry-mirrors"] |= ($mirrorhosts | rtrimstr(" ") | split(" "))' < /etc/docker/daemon.json)" > /etc/docker/daemon.json
 fi
 
 systemctl daemon-reload
-systemctl enable docker
-systemctl start docker
+systemctl enable --now docker
 until systemctl status docker; do
   echo "Docker not ready"
   sleep 1s
