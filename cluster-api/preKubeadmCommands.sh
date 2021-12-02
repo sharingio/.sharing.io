@@ -112,6 +112,7 @@ until systemctl status docker; do
   echo "Docker not ready"
   sleep 1s
 done
+systemctl reload docker
 chgrp users /var/run/docker.sock
 
 # configure sysctls for Kubernetes
