@@ -1,10 +1,11 @@
 #+TITLE: .sharing.io
+#+EXPORT_SELECT_TAGS: export
 
 #+begin_quote
 Configuration for Pair instances
 #+end_quote
 
-* What makes up a Pair instance
+* What makes up a Pair instance :export:
 A Pair instance contains many useful pieces of software for providing a CloudNative and in-cluster environment that suppliments the way that humans can collaborate.
 
 ** Software
@@ -37,7 +38,7 @@ Here's a list of software installed in the order that it is brought up
 - full controller over DNS records for and under {name}.pair.sharing.io
 - TLS on supplied domains with wildcard support
 
-* Structure
+* Structure :export:
 - [[./sharingio-pair-preinit-script.sh][sharingio-pair-preinit-script.sh]] :: a script that's runs after all repos are cloned
 - [[./init][init]] :: a standard repo init script, this one adds several niceities
 - [[./.bashrc++][.bashrc++]] :: extra useful =bash= things
@@ -103,5 +104,5 @@ digraph PairInstance {
 [[file:./pair-instance.svg]]
 #+end_src
 
-* Notes
+* Notes :export:
 - when this repo is forked, the fork is preferred over this one
