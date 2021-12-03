@@ -31,6 +31,8 @@ Here's a list of software installed in the order that it is brought up
 - [[https://gitlab.com/safesurfer/go-http-server][go-http-server]] :: a HTTP server for sharing a folder. Shares =~/public_html= to www.{name}.pair.sharing.io
 - [[https://github.com/reveal/multiplex][Reveal-Multiplex]] :: a websocket server for Reveal to enable presentation multiplexing. Available on multiplex.{name}.pair.sharing.io
 
+#+html: <img width=1500 style='margin-left: auto; margin-right: auto;' alt='pair-instance' src='./pair-instance.svg'>
+
 ** Configuration
 - full controller over DNS records for and under {name}.pair.sharing.io
 - TLS on supplied domains with wildcard support
@@ -44,6 +46,62 @@ Here's a list of software installed in the order that it is brought up
 - [[./cluster-api/preKubeadmCommands.sh][cluster-api/preKubeadmCommands.sh]] :: commands run before the instance has Kubernetes installed
 - [[./cluster-api/postKubeadmCommands.sh][cluster-api/postKubeadmCommands.sh]] :: commands run after the instance has Kubernetes installed, setting it up as an instance
 - [[./cluster-api/manifests/][cluster-api/manifests/]] :: the manifests that make up the instance
+
+* Diagram :noexport:
+#+begin_src dot :file ./pair-instance.svg
+digraph PairInstance {
+    label="Pair Instance"
+    labelloc="t"
+    graph[compound=true]
+
+    subgraph cluster0 {
+      label="Environment"
+      Environment [label="Environment" shape=ellipse]
+      EnvironmentExporter [label="Environment exporter" shape=ellipse]
+      Environment -> EnvironmentExporter [dir=back]
+    }
+    EnvironmentExposer [label="Environment exposer" shape=rectangle]
+    PowerDNS [label="PowerDNS" shape=rectangle]
+    PowerDNSDB [label="PowerDNS DB" shape=rectangle]
+    ExternalDNS [label="ExternalDNS" shape=rectangle]
+    CertManager [label="Cert-Manager" shape=rectangle]
+    NginxIngressController [label="NGINX Ingress Controller" shape=rectangle]
+    GoHttpServer [label="Go-HTTP-Server" shape=rectangle]
+    HelmOperator [label="Helm Operator" shape=rectangle]
+    LocalPathProvisioner [label="local-path-provisioner" shape=rectangle]
+    RevealMultiplex [label="Reveal Multiplex" shape=rectangle]
+    KubePrometheus [label="Prometheus + Grafana stack" shape=rectangle]
+    MetalLB [label="MetalLB" shape=rectangle]
+    Kubed [label="Kubed" shape=rectangle]
+
+    Web [label="Web" shape=Mcircle]
+
+    EnvironmentExposer -> EnvironmentExporter [label="Create Service and Ingress resources from listening processes"]
+    GoHttpServer -> Environment [label="Serve the ~/public_html folder"]
+    MetalLB -> PowerDNS [label="Provides IP"]
+    PowerDNS -> PowerDNSDB
+    ExternalDNS -> PowerDNS [label="Configures records"]
+    CertManager -> PowerDNS [label="Validates dns01"]
+    MetalLB -> NginxIngressController [label="Provides IP"]
+    GoHttpServer -> NginxIngressController [label="Serves"]
+    RevealMultiplex -> NginxIngressController [label="Serves"]
+    CertManager -> NginxIngressController [label="Provides TLS for Ingresses served here"]
+    HelmOperator -> NginxIngressController [label="Deploys"]
+    HelmOperator -> KubePrometheus [label="Deploys"]
+    HelmOperator -> GoHttpServer [label="Deploys"]
+    PowerDNSDB -> LocalPathProvisioner [label="Provisions storage"]
+    Environment -> RevealMultiplex [label="Drives presentations"]
+    Kubed -> CertManager [label="Syncs TLS certs across namespaces"]
+
+    PowerDNS -> Web [label="Serves public DNS records"]
+    NginxIngressController -> Web [label="Serves public traffic"]
+}
+#+end_src
+
+#+RESULTS:
+#+begin_src dot
+[[file:./pair-instance.svg]]
+#+end_src
 
 * Notes
 - when this repo is forked, the fork is preferred over this one
