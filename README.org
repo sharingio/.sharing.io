@@ -51,8 +51,6 @@ Diagram of the component architecture to detail the relationships between the co
 - [[./cluster-api/postKubeadmCommands.sh][cluster-api/postKubeadmCommands.sh]] :: commands run after the instance has Kubernetes installed, setting it up as an instance
 - [[./cluster-api/manifests/][cluster-api/manifests/]] :: the manifests that make up the instance
 
-*
-
 * Diagram :noexport:
 #+begin_src dot :file ./pair-instance.svg
 digraph PairInstance {
