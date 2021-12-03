@@ -69,7 +69,7 @@ digraph PairInstance {
 
     subgraph cluster1 {
       label="Environment"
-      Environment [label="Environment" shape=ellipse]
+      Environment [label="Environment" shape=ellipse color=cyan3 fontcolor=white style=filled]
       EnvironmentExporter [label="Environment exporter" shape=ellipse]
       Environment -> EnvironmentExporter [dir=back]
     }

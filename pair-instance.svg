@@ -43,8 +43,8 @@
 <!-- Environment -->
 <g id="node4" class="node">
 <title>Environment</title>
-<ellipse fill="none" stroke="black" cx="1619.5" cy="-391.09" rx="71.49" ry="18"/>
-<text text-anchor="middle" x="1619.5" y="-387.39" font-family="Times,serif" font-size="14.00">Environment</text>
+<ellipse fill="#00cdcd" stroke="#00cdcd" cx="1619.5" cy="-391.09" rx="71.49" ry="18"/>
+<text text-anchor="middle" x="1619.5" y="-387.39" font-family="Times,serif" font-size="14.00" fill="white">Environment</text>
 </g>
 <!-- EnvironmentExporter -->
 <g id="node5" class="node">
