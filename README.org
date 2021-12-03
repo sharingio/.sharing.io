@@ -32,6 +32,9 @@ Here's a list of software installed in the order that it is brought up
 - [[https://gitlab.com/safesurfer/go-http-server][go-http-server]] :: a HTTP server for sharing a folder. Shares =~/public_html= to www.{name}.pair.sharing.io
 - [[https://github.com/reveal/multiplex][Reveal-Multiplex]] :: a websocket server for Reveal to enable presentation multiplexing. Available on multiplex.{name}.pair.sharing.io
 
+** Architecture
+
+Diagram of the component architecture to detail the relationships between the components
 #+html: <img width=1500 style='margin-left: auto; margin-right: auto;' alt='pair-instance' src='./pair-instance.svg'>
 
 ** Configuration
@@ -48,6 +51,8 @@ Here's a list of software installed in the order that it is brought up
 - [[./cluster-api/postKubeadmCommands.sh][cluster-api/postKubeadmCommands.sh]] :: commands run after the instance has Kubernetes installed, setting it up as an instance
 - [[./cluster-api/manifests/][cluster-api/manifests/]] :: the manifests that make up the instance
 
+*
+
 * Diagram :noexport:
 #+begin_src dot :file ./pair-instance.svg
 digraph PairInstance {
@@ -56,11 +61,19 @@ digraph PairInstance {
     graph[compound=true]
 
     subgraph cluster0 {
+      label="Legend"
+      Pod [shape=rectangle]
+      Container [shape=ellipse]
+      External [shape=Mcircle]
+    }
+
+    subgraph cluster1 {
       label="Environment"
       Environment [label="Environment" shape=ellipse]
       EnvironmentExporter [label="Environment exporter" shape=ellipse]
       Environment -> EnvironmentExporter [dir=back]
     }
+
     EnvironmentExposer [label="Environment exposer" shape=rectangle]
     PowerDNS [label="PowerDNS" shape=rectangle]
     PowerDNSDB [label="PowerDNS DB" shape=rectangle]
@@ -81,8 +94,8 @@ digraph PairInstance {
     GoHttpServer -> Environment [label="Serve the ~/public_html folder"]
     MetalLB -> PowerDNS [label="Provides IP"]
     PowerDNS -> PowerDNSDB
-    ExternalDNS -> PowerDNS [label="Configures records"]
-    CertManager -> PowerDNS [label="Validates dns01"]
+    ExternalDNS -> PowerDNS [label="Configures DNS records"]
+    CertManager -> PowerDNS [label="Validates wildcard LetsEncrypt dns01"]
     MetalLB -> NginxIngressController [label="Provides IP"]
     GoHttpServer -> NginxIngressController [label="Serves"]
     RevealMultiplex -> NginxIngressController [label="Serves"]
