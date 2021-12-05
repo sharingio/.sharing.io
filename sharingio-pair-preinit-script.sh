@@ -22,12 +22,12 @@ if [ ! -d /home/ii/.doom.d ]; then
 fi
 
 DOOM_CONFIG_FILE=ii.org
-if [ -f "${SHARINGIO_PAIR_USER}.org" ]; then
+if [ -f "${HOME}/.doom.d/${SHARINGIO_PAIR_USER}.org" ]; then
     DOOM_CONFIG_FILE="${SHARINGIO_PAIR_USER}.org"
 fi
-if [ -f "${DOOM_CONFIG_FILE}" ]; then
+if [ -f "${HOME}/.doom.d/${DOOM_CONFIG_FILE}" ]; then
     rm -f "${HOME}"/.doom.d/*.el
-    org-tangle "${DOOM_CONFIG_FILE}"
+    org-tangle "${HOME}/.doom.d/${DOOM_CONFIG_FILE}"
     doom sync
 fi
 
