@@ -115,5 +115,11 @@ digraph PairInstance {
 [[file:./pair-instance.svg]]
 #+end_src
 
+* Variables
+| Name                         | Default                         | Description                                                                                        |
+|------------------------------+---------------------------------+----------------------------------------------------------------------------------------------------|
+| =TMATE_SOCKET=               | /tmp/ii.default.target.iisocket | The socket where to run tmate out of                                                               |
+| =SHARINGIO_PAIR_INIT_EXTRAS= |                                 | The manifests in the extra folder ([[./cluster-api/manifests/extra][cluster-api/manifests/extra]]) to apply when Environment is ready |
+
 * Notes :export:
 - when this repo is forked, the fork is preferred over this one
