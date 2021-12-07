@@ -1,6 +1,8 @@
 #!/bin/bash
 
+cd $(dirname $0)
 GIT_ROOT=$(git rev-parse --show-toplevel)
+cd $GIT_ROOT
 
 cat << EOF >> $HOME/.gitconfig
 [credential "https://github.com"]
@@ -16,7 +18,7 @@ for GUEST_NAME in $SHARINGIO_PAIR_GUEST_NAMES; do
     echo "Co-Authored-By: $GUEST_NAME <$GUEST_NAME@users.noreply.github.com>" >> $HOME/.git-commit-template
 done
 (
-    ./.sharing.io/init || true
+    "$HOME"/.sharing.io/init || true
 ) &
 if [ ! -d /home/ii/.doom.d ]; then
   git clone "https://github.com/$SHARINGIO_PAIR_USER/.doom.d" || \
