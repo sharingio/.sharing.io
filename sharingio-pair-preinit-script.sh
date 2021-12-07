@@ -1,5 +1,7 @@
 #!/bin/bash
 
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
 cat << EOF >> $HOME/.gitconfig
 [credential "https://github.com"]
   helper = "!f() { test \"\$1\" = get && echo \"password=\$GITHUB_TOKEN\nusername=\$SHARINGIO_PAIR_USER\";}; f"
@@ -49,3 +51,14 @@ for repo in $(find ~ -type d -name ".git"); do
     fi
 done
 
+. <(sudo cat "/var/run/host/root/.sharing-io-pair-init.env" | tr -d '\r')
+if [ -n "${SHARINGIO_PAIR_INIT_EXTRAS:-}" ]; then
+    for EXTRA in ${SHARINGIO_PAIR_INIT_EXTRAS[@]:-}; do
+        EXTRA_FILE="${GIT_ROOT}/cluster-api/manifests/extras/${EXTRA}.yaml"
+        if [ ! -f "${EXTRA_FILE}" ]; then
+            echo "Error: requested extra '$EXTRA' not found in ${GIT_ROOT}/cluster-api/manifests/extras/"
+            continue
+        fi
+        envsubst < "${EXTRA_FILE}" | kubectl apply -f -
+    done
+fi
