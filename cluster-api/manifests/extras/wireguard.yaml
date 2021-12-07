@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wireguard
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wireguard-config
+  namespace: wireguard
+data:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Pacific/Auckland"
+  SERVERPORT: "51820"
+  SERVERURL: "wireguard.${SHARINGIO_PAIR_BASE_DNS_NAME}"
+  PEERS: "5"
+  # PEERDNS: "10.43.0.30"
+  PEERDNS: "auto"
+  ALLOWEDIPS: "0.0.0.0/0, ::/0"
+  INTERNAL_SUBNET: "10.13.13.0"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wireguard
+  namespace: wireguard
+  labels:
+    app: wireguard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wireguard
+  template:
+    metadata:
+      labels:
+        app: wireguard
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - wireguard
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: wireguard
+          image: docker.io/linuxserver/wireguard:v1.0.20210424-ls36
+          envFrom:
+            - configMapRef:
+                name: wireguard-config
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_MODULE
+            privileged: true
+          volumeMounts:
+            - name: wg-config
+              mountPath: /config
+            - name: host-volumes
+              mountPath: /lib/modules
+          ports:
+            - containerPort: 51820
+              protocol: UDP
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "10m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+      volumes:
+        - name: wg-config
+          hostPath:
+            path: /home/ii/.config/wireguard
+        - name: host-volumes
+          hostPath:
+            path: /lib/modules
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wireguard
+  namespace: wireguard
+spec:
+  selector:
+    app: wireguard
+  ports:
+    - name: wireguard
+      port: 51820
+      targetPort: 51820
+      protocol: UDP
+  externalTrafficPolicy: Local
+  type: LoadBalancer
