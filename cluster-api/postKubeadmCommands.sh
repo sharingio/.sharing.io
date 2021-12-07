@@ -28,6 +28,13 @@ elif sudo [ -f /var/run/host/root/.sharing-io-pair-init.env ]; then
 fi
 . <(sudo cat "${ENV_FILE}" | tr -d '\r')
 
+export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_WORKER_NODES:-0}))
+export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
+cat <<EOF >> "${ENV_FILE}"
+export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$SHARINGIO_PAIR_INSTANCE_TOTAL_NODES
+export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS
+EOF
+
 NAMESPACES=(
   default
   external-dns
@@ -110,8 +117,6 @@ envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
 envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
 
 # scale the ingress controller across all the nodes
-export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_WORKER_NODES:-0}))
-export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
 
 # Instance managed DNS
 envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
