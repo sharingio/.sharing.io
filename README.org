@@ -11,7 +11,7 @@ A Pair instance contains many useful pieces of software for providing a CloudNat
 ** Software
 Here's a list of software installed in the order that it is brought up
 
-- [[https://ubuntu.com/server][Ubuntu host OS]] :: this has limitations and is very much a full OS but works well and has fast initialisation support with Equinix Metal
+- [[https://ubuntu.com/server][Ubuntu host OS]] :: familiar OS that has good support at Equinix Metal
 - [[https://www.openssh.com/][OpenSSH server]] :: allows for connection stability and forwarding of SSH keys
 - [[https://www.docker.com/][Docker CE]] + [[https://containerd.io/][containerd.io]] :: container runtime allows for image build and deploy when in-cluster
 - [[https://kubernetes.io][Kubernetes]] :: the kube
@@ -115,7 +115,7 @@ digraph PairInstance {
 [[file:./pair-instance.svg]]
 #+end_src
 
-* Variables
+* Variables :export:
 | Name                         | Default                         | Description                                                                                        |
 |------------------------------+---------------------------------+----------------------------------------------------------------------------------------------------|
 | =TMATE_SOCKET=               | /tmp/ii.default.target.iisocket | The socket where to run tmate out of                                                               |
