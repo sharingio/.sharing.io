@@ -98,3 +98,6 @@ spec:
       protocol: UDP
   externalTrafficPolicy: Local
   type: LoadBalancer
+  externalIPs:
+    - ${SHARINGIO_PAIR_LOAD_BALANCER_IP}
+    - ${MACHINE_IP}
