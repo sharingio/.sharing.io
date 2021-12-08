@@ -18,3 +18,56 @@ for NUM in $(seq 0 20); do
 done
 
 alias sharingio-pair-load-init-env='. <(sudo cat {/var/run/host,}/root/.sharing-io-pair-init.env 2> /dev/null)'
+
+sharingio-pair-add-guest() {
+  GUEST_NAME="${1}"
+  if [ -z "${GUEST_NAME}" ]; then
+    echo "Error: please provide guest name as first arg" > /dev/sderr
+  fi
+
+  FOUND=false
+
+  if ! grep -q "ssh-import-id gh:${GUEST_NAME}" < ~/.ssh/authorized_keys; then
+    ssh-import-id gh:"${GUEST_NAME}" > /dev/null 2>&1
+  else
+    echo "Guest already added, found authorized keys"
+    FOUND=true
+  fi
+  if ! grep -q "${GUEST_NAME}@users." < $HOME/.git-commit-template; then
+    echo "Co-Authored-By: $GUEST_NAME <$GUEST_NAME@users.noreply.github.com>" >> $HOME/.git-commit-template
+  else
+    echo "Guest already added, found co-author in git-commit-template"
+    FOUND=true
+  fi
+  if [ "${FOUND}" = true ]; then
+    return
+  fi
+
+  echo "Added guest '${GUEST_NAME}'"
+}
+
+sharingio-pair-remove-guest() {
+  GUEST_NAME="${1}"
+  if [ -z "${GUEST_NAME}" ]; then
+    echo "Error: please provide guest name as first arg" > /dev/sderr
+  fi
+  FOUND=false
+
+  if grep -q "ssh-import-id gh:${GUEST_NAME}" < ~/.ssh/authorized_keys; then
+    sed -i -e "/ssh-import-id gh:${GUEST_NAME}/d" ~/.ssh/authorized_keys
+  else
+    echo "Guest not found in authorized keys file"
+    FOUND=true
+  fi
+  if grep -q "${GUEST_NAME}@users." < $HOME/.git-commit-template; then
+    sed -i -e "/"${GUEST_NAME}"/d" $HOME/.git-commit-template
+  else
+    echo "Guest not found in git-commit-template file"
+    FOUND=true
+  fi
+  if [ "${FOUND}" = true ]; then
+    return
+  fi
+
+  echo "Removed guest '${GUEST_NAME}'"
+}
