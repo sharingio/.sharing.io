@@ -119,7 +119,43 @@ digraph PairInstance {
 | Name                         | Default                         | Description                                                                                        |
 |------------------------------+---------------------------------+----------------------------------------------------------------------------------------------------|
 | =TMATE_SOCKET=               | /tmp/ii.default.target.iisocket | The socket where to run tmate out of                                                               |
-| =SHARINGIO_PAIR_INIT_EXTRAS= |                                 | The manifests in the extra folder ([[./cluster-api/manifests/extra][cluster-api/manifests/extra]]) to apply when Environment is ready |
+| =SHARINGIO_PAIR_INIT_EXTRAS= |                                 | The manifests in the extra folder ([[./cluster-api/manifests/extras][cluster-api/manifests/extras]]) to apply when Environment is ready |
+
+* Shortcuts and tips :export:
+** .sharing.io config
+Any of the config can be overriden by a having a fork of .sharing.io.
+
+IMPORTANT: As Pair moves moderately, this is only a good idea if you can maintain it.
+
+** Refreshing Environment
+By executing =nuke-environment=, it will restart Environment back to a clean state.
+This is useful if say:
+- broken packages were installed
+- filesystem is messed up
+- overload of programs running
+
+This isn't useful for:
+- messy home folder
+- broken or misconfigured cluster
+
+** w[0-20] workspaces
+When in Environment, using tmate, you can switch windows normally via C-b [0-9].
+Sometimes it can be useful to switch using a command.
+For example =w1= will switch to SHELL or =w0= to Emacs, or =w3= will switch to the third window.
+
+** sharingio-pair-load-init-env
+This alias will load all the env vars prepared for instance launch into the current shell.
+
+** Adding and removing guests after launch
+Sometimes you might want to start pairing after creating an instance or you might have forgotten to add a guest.
+Guests can be added via
+#+begin_src shell
+sharingio-pair-add-guest <GUEST NAME>
+#+end_src
+and removed via
+#+begin_src
+sharingio-pair-remove-guest <GUEST NAME>
+#+end_src
 
 * Notes :export:
 - when this repo is forked, the fork is preferred over this one
