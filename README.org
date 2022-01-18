@@ -22,7 +22,7 @@ Here's a list of software installed in the order that it is brought up
 - [[https://metallb.universe.tf/][MetalLB]] :: be assigned BGP IPs
 - [[https://github.com/kubernetes-sigs/metrics-server][Metrics-Server]] :: allow support for =kubectl top=
 - [[https://github.com/kubeops/kubed][Kubed]] :: sync secrets between namespaces
-- [[https://github.com/sharingio/environment][Environment]] :: a containerised environment with many tools useful for Pairing, such as tmate, Emacs, Kubernetes tuils, and development utilities
+- [[https://github.com/sharingio/environment][Environment]] :: a containerised environment with many tools useful for Pairing, such as tmate, Emacs, Kubernetes utils, and development utilities
 - [[https://github.com/sharingio/environment/tree/master/cmd/environment-exporter][Environment-Exporter]] :: a webserver for serving a JSON list of processes that are listening on ports
 - [[https://github.com/kubernetes/ingress-nginx/][nginx-ingress-controller]] :: a Kubernetes ingress controller for bringing traffic into the cluster
 - [[https://github.com/kubernetes-sigs/external-dns][External-DNS]] :: a declarative way of managing DNS records
@@ -123,7 +123,7 @@ digraph PairInstance {
 
 * Shortcuts and tips :export:
 ** .sharing.io config
-Any of the config can be overriden by a having a fork of .sharing.io.
+Any of the config can be overridden by a having a fork of .sharing.io.
 
 IMPORTANT: As Pair moves moderately, this is only a good idea if you can maintain it.
 
