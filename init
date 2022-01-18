@@ -1,4 +1,9 @@
 #!/bin/bash
+
+GREETING_MESSAGE="
+Hello and welcome to this Pair instance!
+"
+
 echo "This will run on sharing.io humacs init"
 echo "~/.sharing.io/init START"
 
@@ -37,5 +42,8 @@ fi
 
 echo "~/.sharing.io/init Creating tmate SHELL window"
 # without it, there is only emacs, hard for new users
-tmate -F -v -S $TMATE_SOCKET new-window -d -c "$HOME" -n SHELL bash
+tmate -F -v -S $TMATE_SOCKET new-window -d -c "$HOME" -n SHELL "echo -e '${GREETING_MESSAGE}'; bash"
 # Feel free to customize the startup beyond here
+
+# switch over to SHELL
+w1 || true
