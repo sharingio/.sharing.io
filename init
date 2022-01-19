@@ -42,10 +42,10 @@ fi
 
 echo "~/.sharing.io/init Creating tmate SHELL window"
 # without it, there is only emacs, hard for new users
-tmate -F -v -S "$TMATE_SOCKET" new-window -d -c "$HOME" -n SHELL "echo -e '${GREETING_MESSAGE}'; bash"
 until [ -n "$(tmate -S "$TMATE_SOCKET" list-clients)" ]; do
     sleep 1s
 done
+tmate -F -v -S "$TMATE_SOCKET" new-window -d -c "$HOME" -n SHELL "echo -e '${GREETING_MESSAGE}'; bash"
 tmate select-window -t "1"
 
 # Feel free to customize the startup beyond here
