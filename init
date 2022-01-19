@@ -35,13 +35,17 @@ docker pull alpine:edge &
 
 if [ -x "$GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}/init" ] ; then
     (
-        cd $INIT_DEFAULT_REPOS_FOLDER
-        $GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}/init &
+        cd "$INIT_DEFAULT_REPOS_FOLDER"
+        "$GIT_ROOT/users/${SHARINGIO_PAIR_USER:-$USER}/init" &
     )
 fi
 
 echo "~/.sharing.io/init Creating tmate SHELL window"
 # without it, there is only emacs, hard for new users
-tmate -F -v -S $TMATE_SOCKET new-window -d -c "$HOME" -n SHELL "echo -e '${GREETING_MESSAGE}'; bash"
+tmate -F -v -S "$TMATE_SOCKET" new-window -d -c "$HOME" -n SHELL "echo -e '${GREETING_MESSAGE}'; bash"
+until [ -n "$(tmate -S "$TMATE_SOCKET" list-clients)" ]; do
+    sleep 1s
+done
 tmate select-window -t "1"
+
 # Feel free to customize the startup beyond here
