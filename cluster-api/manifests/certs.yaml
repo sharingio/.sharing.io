@@ -17,10 +17,6 @@ spec:
               name: tsig-powerdns
               key: powerdns
             nameserver: ${KUBERNETES_CONTROLPLANE_ENDPOINT}
-        selector:
-          dnsNames:
-            - "*.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
-            - "${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
