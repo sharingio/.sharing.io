@@ -21,7 +21,7 @@ spec:
       enabled: true
   config:
     contour:
-      default-tls-secret: contour-external/letsencrypt-prod
+      default-tls-secret: ${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}/letsencrypt-prod
     network:
       ingress-class: contour.ingress.networking.knative.dev
       clusteringress.class: contour.ingress.networking.knative.dev
