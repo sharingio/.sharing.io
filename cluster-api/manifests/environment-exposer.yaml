@@ -80,6 +80,8 @@ spec:
               value: "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}"
             - name: APP_ENVIRONMENT_BASE_DOMAIN
               value: ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
+            - name: APP_INGRESS_CLASS_NAME
+              value: $SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
           volumeMounts:
             - name: template-folder
               mountPath: /home/ii/
