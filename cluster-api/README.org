@@ -45,3 +45,101 @@ External-DNS
 #+begin_src shell
 curl -o ./manifests/external-dns-crd.yaml -L https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.8.0/docs/contributing/crd-source/crd-manifest.yaml
 #+end_src
+
+* Extras
+#+begin_src shell
+mkdir -p manifests/extras
+#+end_src
+
+** Knative
+#+begin_src shell
+mkdir -p manifests/extras/knative
+cd $_
+
+# contour for Knative
+curl \
+    -o ./contour.yaml \
+    -L https://github.com/knative/net-contour/releases/download/knative-v1.3.0/contour.yaml
+
+# Knative Operator
+VERSION=1.3.1
+mkdir -p ./knative-serving
+curl -o ./knative-operator.yaml -L "https://github.com/knative/operator/releases/download/knative-v${VERSION}/operator.yaml"
+sed -i -e 's/namespace: default/namespace: knative-operator/g' ./knative-operator.yaml
+#+end_src
+
+#+begin_src yaml :tangle ./manifests/extras/knative/00-operator-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+ name: knative-operator
+#+end_src
+
+#+begin_src yaml :tangle ./manifests/extras/knative/serving.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+ name: knative-serving
+---
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: knative-serving
+spec:
+  version: 1.3.0
+  additionalManifests:
+    - URL: https://github.com/knative/net-certmanager/releases/download/knative-v1.3.0/release.yaml
+  ingress:
+    istio:
+      enabled: false
+    kourier:
+      enabled: false
+    contour:
+      enabled: true
+  config:
+    contour:
+      default-tls-secret: contour-external/letsencrypt-prod
+    network:
+      ingress-class: contour.ingress.networking.knative.dev
+      clusteringress.class: contour.ingress.networking.knative.dev
+      certificate-provider: cert-manager
+      autocreate-cluster-domain-claims: "true"
+      auto-tls: Enabled
+      default-external-scheme: HTTPS
+      http-protocol: Redirected
+    defaults:
+      container-name-template: "{{.Name}}"
+    domain:
+      ${SHARINGIO_PAIR_BASE_DNS_NAME}: ""
+    certmanager:
+      issuerRef: |
+        kind: ClusterIssuer
+        name: letsencrypt-prod
+
+#+end_src
+
+#+begin_src yaml :tangle ./manifests/extras/knative/tlscertificatedelegation.yaml
+apiVersion: projectcontour.io/v1
+kind: TLSCertificateDelegation
+metadata:
+  name: default-delegation
+  namespace: contour-external
+spec:
+  delegations:
+    - secretName: letsencrypt-prod
+      targetNamespaces:
+      - "*"
+#+end_src
+
+Stich the manifests together
+#+begin_src shell
+echo '---' > manifests/extras/knative.yaml
+for M in manifests/extras/knative/*; do
+    if [ "$(basename "${M}")" = "serving.yaml" ]; then
+        continue
+    fi
+    cat "${M}" >> manifests/extras/knative.yaml
+    echo '---' >> manifests/extras/knative.yaml
+done
+#+end_src
