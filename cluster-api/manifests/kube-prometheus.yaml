@@ -31,7 +31,7 @@ spec:
       adminPassword: "admin"
       ingress:
         annotations:
-          kubernetes.io/ingress.class: nginx
+          kubernetes.io/ingress.class: $SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
         enabled: true
         hosts:
           - grafana.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME

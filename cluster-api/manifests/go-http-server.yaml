@@ -20,8 +20,8 @@ spec:
       enabled: true
       annotations:
         nginx.ingress.kubernetes.io/proxy-body-size: "0"
-        kubernetes.io/ingress.class: nginx
-      realIPHeader: "X-Real-Ip"
+        kubernetes.io/ingress.class: $SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
+      realIPHeader: "$SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER"
       hosts:
         - host: www.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
           paths:
