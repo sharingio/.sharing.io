@@ -28,13 +28,8 @@ elif sudo [ -f /var/run/host/root/.sharing-io-pair-init.env ]; then
 fi
 . <(sudo cat "${ENV_FILE}" | tr -d '\r')
 
-export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="nginx"
-export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Real-Ip"
-export KNATIVE_ENABLED="$(echo "$SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED" | yq e '.[] | select(.name = "SHARINGIO_PAIR_INIT_EXTRAS")| .value' -P - | grep -q -E '(^| )knative( |$)')"
-if [[ "$KNATIVE_ENABLED" -eq 0 ]]; then
-  export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="contour-external"
-  export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Envoy-External-Address"
-fi
+export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="contour-external"
+export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Envoy-External-Address"
 
 cat <<EOF >> "${ENV_FILE}"
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$SHARINGIO_PAIR_INSTANCE_TOTAL_NODES
