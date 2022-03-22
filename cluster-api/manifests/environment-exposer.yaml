@@ -64,7 +64,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: environment-exposer
-          image: registry.gitlab.com/sharingio/environment/exposer:2022.02.25.1425
+          image: registry.gitlab.com/sharingio/environment/exposer:2022.03.22.1054
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 1000
@@ -80,6 +80,8 @@ spec:
               value: "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}"
             - name: APP_ENVIRONMENT_BASE_DOMAIN
               value: ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
+            - name: APP_INGRESS_CLASS_NAME
+              value: $SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
           volumeMounts:
             - name: template-folder
               mountPath: /home/ii/

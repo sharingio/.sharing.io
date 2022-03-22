@@ -53,10 +53,21 @@ done
 if [ -n "${SHARINGIO_PAIR_INIT_EXTRAS:-}" ]; then
     for EXTRA in ${SHARINGIO_PAIR_INIT_EXTRAS[@]:-}; do
         EXTRA_FILE="${HOME}/.sharing.io/cluster-api/manifests/extras/${EXTRA}.yaml"
-        if [ ! -f "${EXTRA_FILE}" ]; then
+        if [ -d "${HOME}/.sharing.io/cluster-api/manifests/extras/${EXTRA}" ]; then
+            for FILE in "${HOME}/.sharing.io/cluster-api/manifests/extras/${EXTRA}"/*; do
+                envsubst < "${FILE}" | kubectl apply -f -
+            done
+        elif [ -f "${EXTRA_FILE}" ]; then
+            envsubst < "${EXTRA_FILE}" | kubectl apply -f -
+        else
             echo "Error: requested extra '$EXTRA' not found in ${HOME}/.sharing.io/cluster-api/manifests/extras/"
             continue
         fi
-        envsubst < "${EXTRA_FILE}" | kubectl apply -f -
     done
+fi
+
+# do this later since the CRD won't exist in the initial knative-operator install
+if echo "${SHARINGIO_PAIR_INIT_EXTRAS:-}" | grep -q -E "(^| )knative( |$)"; then
+    kubectl delete -f "${HOME}"/.sharing.io/cluster-api/manifests/nginx-ingress.yaml
+    kubectl -n contour-external patch svc/envoy -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 fi

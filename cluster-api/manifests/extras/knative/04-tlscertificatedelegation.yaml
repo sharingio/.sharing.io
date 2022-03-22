@@ -1,0 +1,10 @@
+apiVersion: projectcontour.io/v1
+kind: TLSCertificateDelegation
+metadata:
+  name: default-delegation
+  namespace: ${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}
+spec:
+  delegations:
+    - secretName: letsencrypt-prod
+      targetNamespaces:
+      - "*"
