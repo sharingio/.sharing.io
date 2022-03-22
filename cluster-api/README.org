@@ -16,7 +16,7 @@ curl -o ./manifests/local-path-storage.yaml -L https://raw.githubusercontent.com
 
 Cert-Manager
 #+begin_src shell
-curl -o ./manifests/cert-manager.yaml -L https://github.com/jetstack/cert-manager/releases/download/v1.5.0/cert-manager.yaml
+curl -o ./manifests/cert-manager.yaml -L https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
 #+end_src
 
 WeaveNet
@@ -91,23 +91,20 @@ spec:
   additionalManifests:
     - URL: https://github.com/knative/net-certmanager/releases/download/knative-v1.3.0/release.yaml
   ingress:
-    istio:
-      enabled: false
-    kourier:
-      enabled: false
     contour:
       enabled: true
   config:
-    contour:
-      default-tls-secret: ${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}/letsencrypt-prod-without-selector
+    # TODO(bobymcbobs): fix default tls cert
+    # contour:
+    #   default-tls-secret: ${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}/letsencrypt-prod-without-selector
     network:
       ingress-class: contour.ingress.networking.knative.dev
       clusteringress.class: contour.ingress.networking.knative.dev
       certificate-provider: cert-manager
       autocreate-cluster-domain-claims: "true"
       auto-tls: Enabled
-      default-external-scheme: HTTPS
-      http-protocol: Redirected
+      default-external-scheme: HTTP
+      http-protocol: Enabled
     defaults:
       container-name-template: "{{.Name}}"
     domain:
