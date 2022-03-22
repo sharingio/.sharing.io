@@ -65,9 +65,3 @@ if [ -n "${SHARINGIO_PAIR_INIT_EXTRAS:-}" ]; then
         fi
     done
 fi
-
-# do this later since the CRD won't exist in the initial knative-operator install
-if echo "${SHARINGIO_PAIR_INIT_EXTRAS:-}" | grep -q -E "(^| )knative( |$)"; then
-    kubectl delete -f "${HOME}"/.sharing.io/cluster-api/manifests/nginx-ingress.yaml
-    kubectl -n contour-external patch svc/envoy -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
-fi
