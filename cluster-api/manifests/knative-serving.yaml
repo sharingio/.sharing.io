@@ -41,7 +41,7 @@ spec:
     defaults:
       container-name-template: "{{.Name}}"
     domain:
-      ${SHARINGIO_PAIR_BASE_DNS_NAME}: ""
+      ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}: ""
     certmanager:
       issuerRef: |
         kind: ClusterIssuer
