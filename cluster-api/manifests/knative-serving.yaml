@@ -1,8 +1,3 @@
-apiVersion: v1
-kind: Namespace
-metadata:
- name: knative-serving
----
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
@@ -16,9 +11,6 @@ spec:
     contour:
       enabled: true
   config:
-    # TODO(bobymcbobs): fix default tls cert
-    # contour:
-    #   default-tls-secret: ${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}/letsencrypt-prod-without-selector
     network:
       ingress-class: contour.ingress.networking.knative.dev
       clusteringress.class: contour.ingress.networking.knative.dev
@@ -27,10 +19,30 @@ spec:
       auto-tls: Enabled
       default-external-scheme: HTTP
       http-protocol: Enabled
+      # TODO(BobyMCbobs) figure out saving of all letsencrypt-prod certs
+      # namespace-wildcard-cert-selector: |
+      #   {
+      #       "matchExpressions": [
+      #           {
+      #               "values": [
+      #                   "true"
+      #               ],
+      #               "operator": "NotIn",
+      #               "key": "networking.knative.dev/disableWildcardCert"
+      #           },
+      #           {
+      #               "values": [
+      #                   "kube-system"
+      #               ],
+      #               "operator": "NotIn",
+      #               "key": "kubernetes.io/metadata.name"
+      #           }
+      #       ]
+      #   }
     defaults:
       container-name-template: "{{.Name}}"
     domain:
-      ${SHARINGIO_PAIR_BASE_DNS_NAME}: ""
+      ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}: ""
     certmanager:
       issuerRef: |
         kind: ClusterIssuer

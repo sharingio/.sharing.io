@@ -28,15 +28,8 @@ elif sudo [ -f /var/run/host/root/.sharing-io-pair-init.env ]; then
 fi
 . <(sudo cat "${ENV_FILE}" | tr -d '\r')
 
-export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_WORKER_NODES:-0}))
-export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
-export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="nginx"
-export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Real-Ip"
-export KNATIVE_ENABLED="$(echo "$SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED" | yq e '.[] | select(.name = "SHARINGIO_PAIR_INIT_EXTRAS")| .value' -P - | grep -q -E '(^| )knative( |$)')"
-if [[ "$KNATIVE_ENABLED" -eq 0 ]]; then
-  export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="contour-external"
-  export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Envoy-External-Address"
-fi
+export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="contour-external"
+export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Envoy-External-Address"
 
 cat <<EOF >> "${ENV_FILE}"
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$SHARINGIO_PAIR_INSTANCE_TOTAL_NODES
@@ -53,6 +46,8 @@ NAMESPACES=(
   helm-operator
   kube-prometheus
   pair-system
+  knative-operator
+  knative-serving
   $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
 )
 
@@ -135,8 +130,15 @@ envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 # PowerDNS
 envsubst '${KUBERNETES_CONTROLPLANE_ENDPOINT} ${MACHINE_IP} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${KUBERNETES_CONTROLPLANE_ENDPOINT}' < ./manifests/powerdns.yaml | kubectl apply -f -
 
-# nginx-ingress-controller
-envsubst < ./manifests/nginx-ingress.yaml | kubectl apply -f -
+# Contour ingress gateway
+kubectl apply -f ./manifests/contour.yaml
+kubectl -n contour-external patch svc/envoy -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
+
+# Knative Operator
+kubectl apply -f ./manifests/knative-operator.yaml
+
+# Knative Serving
+envsubst < ./manifests/knative-serving.yaml | kubectl apply -f -
 
 time (
   until [ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
