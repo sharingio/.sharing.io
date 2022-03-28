@@ -19,25 +19,26 @@ spec:
       auto-tls: Enabled
       default-external-scheme: HTTP
       http-protocol: Enabled
-      namespace-wildcard-cert-selector: |
-        {
-            "matchExpressions": [
-                {
-                    "values": [
-                        "true"
-                    ],
-                    "operator": "NotIn",
-                    "key": "networking.knative.dev/disableWildcardCert"
-                },
-                {
-                    "values": [
-                        "kube-system"
-                    ],
-                    "operator": "NotIn",
-                    "key": "kubernetes.io/metadata.name"
-                }
-            ]
-        }
+      # TODO(BobyMCbobs) figure out saving of all letsencrypt-prod certs
+      # namespace-wildcard-cert-selector: |
+      #   {
+      #       "matchExpressions": [
+      #           {
+      #               "values": [
+      #                   "true"
+      #               ],
+      #               "operator": "NotIn",
+      #               "key": "networking.knative.dev/disableWildcardCert"
+      #           },
+      #           {
+      #               "values": [
+      #                   "kube-system"
+      #               ],
+      #               "operator": "NotIn",
+      #               "key": "kubernetes.io/metadata.name"
+      #           }
+      #       ]
+      #   }
     defaults:
       container-name-template: "{{.Name}}"
     domain:
