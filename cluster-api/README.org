@@ -63,6 +63,30 @@ curl \
 sed -i -e 's/namespace: default/namespace: knative-operator/g' ./manifests/knative-operator.yaml
 #+end_src
 
+metrics-server
+#+begin_src yaml :tangle ./manifests/metrics-server-values.yaml
+replicas: 3
+args:
+  - --cert-dir=/tmp
+  - --logtostderr
+  - --kubelet-preferred-address-types=InternalIP
+  - --kubelet-insecure-tls
+  - --metric-resolution=15s
+metrics:
+  enabled: true
+#+end_src
+#+begin_src shell :results silent
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+
+helm template \
+    metrics-server \
+    -n kube-system \
+    -f ./manifests/metrics-server-values.yaml \
+    --version 3.8.2 \
+    metrics-server/metrics-server \
+      > ./manifests/metrics-server.yaml
+#+end_src
+
 * Extras
 #+begin_src shell
 mkdir -p manifests/extras
