@@ -1,0 +1,151 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: distribution-config
+  namespace: pair-system
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      accesslog:
+        disabled: true
+      level: debug
+      fields:
+        service: registry
+        environment: development
+    auth:
+      htpasswd:
+        realm: basic-realm
+        path: /etc/docker/registry/htpasswd
+    storage:
+      delete:
+        enabled: true
+      filesystem:
+        rootdirectory: /var/lib/registry
+      maintenance:
+        uploadpurging:
+          enabled: false
+    http:
+      addr: :5000
+      secret: registry-for-pair-instance-registry-for-pair-instance
+      debug:
+        addr: :5001
+        prometheus:
+          enabled: true
+          path: /metrics
+        headers:
+          X-Content-Type-Options: [nosniff]
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: distribution-data
+  namespace: pair-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: distribution
+  namespace: pair-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: distribution
+  template:
+    metadata:
+      labels:
+        app: distribution
+    spec:
+      containers:
+        - name: distribution
+          image: registry:2.8.1
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 10m
+              memory: 30Mi
+            requests:
+              cpu: 10m
+              memory: 30Mi
+          ports:
+            - containerPort: 5000
+          env:
+            - name: TZ
+              value: "Pacific/Auckland"
+          volumeMounts:
+            - name: distribution-data
+              mountPath: /var/lib/registry
+            - name: distribution-config
+              mountPath: /etc/docker/registry/config.yml
+              subPath: config.yml
+            - name: distribution-auth
+              mountPath: /etc/docker/registry/htpasswd
+              subPath: htpasswd
+          readinessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 1
+            periodSeconds: 20
+      volumes:
+        - name: distribution-data
+          persistentVolumeClaim:
+            claimName: distribution-data
+        - name: distribution-config
+          configMap:
+            name: distribution-config
+        - name: distribution-auth
+          secret:
+            secretName: distribution-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: distribution
+  namespace: pair-system
+spec:
+  ports:
+    - port: 5000
+      targetPort: 5000
+  selector:
+    app: distribution
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: distribution
+  namespace: pair-system
+  annotations:
+    kubernetes.io/ingress.class: $SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
+spec:
+  tls:
+    - hosts:
+        - registry.${SHARINGIO_PAIR_BASE_DNS_NAME}
+      secretName: letsencrypt-prod
+  rules:
+    - host: registry.${SHARINGIO_PAIR_BASE_DNS_NAME}
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: distribution
+                port:
+                  number: 5000

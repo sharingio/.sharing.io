@@ -30,12 +30,16 @@ fi
 
 export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="contour-external"
 export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Envoy-External-Address"
+export SHARINGIO_PAIR_INSTANCE_REGISTRY_USER=$SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
+export SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD="$(tr -cd '[:alnum:]' < /dev/urandom | fold -w"${DEFAULT_LENGTH:-32}" | head -n1)"
 
 cat <<EOF >> "${ENV_FILE}"
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$SHARINGIO_PAIR_INSTANCE_TOTAL_NODES
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS
 export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME=$SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
 export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER=$SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER
+export SHARINGIO_PAIR_INSTANCE_REGISTRY_USER=$SHARINGIO_PAIR_INSTANCE_REGISTRY_USER
+export SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD=$SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD
 EOF
 
 NAMESPACES=(
@@ -107,6 +111,9 @@ kubectl create secret generic -n metallb-system memberlist --from-literal=secret
 envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system apply -f -
 envsubst < ./manifests/metrics-server.yaml | kubectl apply -f -
 envsubst < ./manifests/kubed.yaml | kubectl apply -f -
+kubectl -n pair-system create secret generic distribution-auth --from-literal=htpasswd="$(htpasswd -Bbn "$SHARINGIO_PAIR_INSTANCE_REGISTRY_USER" "$SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD")" 2> /dev/null
+envsubst < ./manifests/distribution.yaml | kubectl apply -f -
+envsubst < ./manifests/local-registry-hosting.yaml | kubectl apply -f -
 
 # Environment
 envsubst < ./manifests/environment.yaml | kubectl apply -f -
