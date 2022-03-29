@@ -65,3 +65,5 @@ if [ -n "${SHARINGIO_PAIR_INIT_EXTRAS:-}" ]; then
         fi
     done
 fi
+
+echo "${SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD}" | docker login "registry.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" --username "${SHARINGIO_PAIR_INSTANCE_REGISTRY_USER}" --password-stdin
