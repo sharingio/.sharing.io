@@ -5,4 +5,4 @@ metadata:
   namespace: kube-public
 data:
   localRegistryHosting.v1: |
-    host: "registry.${SHARINGIO_PAIR_BASE_DNS_NAME}"
+    host: "registry.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME"
