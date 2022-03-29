@@ -22,6 +22,7 @@ PACKAGES=(
   kitty-terminfo 
   git
   gettext-base
+  apache2-utils
 )
 
 pwd
