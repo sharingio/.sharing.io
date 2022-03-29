@@ -72,13 +72,6 @@ spec:
         - name: distribution
           image: registry:2.8.1
           imagePullPolicy: IfNotPresent
-          resources:
-            limits:
-              cpu: 10m
-              memory: 30Mi
-            requests:
-              cpu: 10m
-              memory: 30Mi
           ports:
             - containerPort: 5000
           env:
