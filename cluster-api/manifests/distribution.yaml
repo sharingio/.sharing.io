@@ -129,10 +129,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - registry.${SHARINGIO_PAIR_BASE_DNS_NAME}
+        - registry.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
       secretName: letsencrypt-prod
   rules:
-    - host: registry.${SHARINGIO_PAIR_BASE_DNS_NAME}
+    - host: registry.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
       http:
         paths:
           - path: /
