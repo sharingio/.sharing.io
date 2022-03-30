@@ -31,6 +31,8 @@ Here's a list of software installed in the order that it is brought up
 - [[https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack][Kube-Prometheus]] :: a deployment of Prometheus and Grafana. In Pair, it's deployed so that anyone can view it on grafana.{name}.pair.sharing.io
 - [[https://gitlab.com/safesurfer/go-http-server][go-http-server]] :: a HTTP server for sharing a folder. Shares =~/public_html= to www.{name}.pair.sharing.io
 - [[https://github.com/reveal/multiplex][Reveal-Multiplex]] :: a websocket server for Reveal to enable presentation multiplexing. Available on multiplex.{name}.pair.sharing.io
+- [[https://github.com/distribution/distribution][Distribution (registry)]] :: a container registry
+- [[https://knative.dev/][Knative (Serving)]] :: serverless containers on Kubernetes
 
 ** Architecture
 
@@ -77,7 +79,7 @@ digraph PairInstance {
     PowerDNSDB [label="PowerDNS DB" shape=rectangle]
     ExternalDNS [label="ExternalDNS" shape=rectangle]
     CertManager [label="Cert-Manager" shape=rectangle]
-    NginxIngressController [label="NGINX Ingress Controller" shape=rectangle]
+    ContourIngressController [label="Contour Ingress Controller" shape=rectangle]
     GoHttpServer [label="Go-HTTP-Server" shape=rectangle]
     HelmOperator [label="Helm Operator" shape=rectangle]
     LocalPathProvisioner [label="local-path-provisioner" shape=rectangle]
@@ -85,6 +87,8 @@ digraph PairInstance {
     KubePrometheus [label="Prometheus + Grafana stack" shape=rectangle]
     MetalLB [label="MetalLB" shape=rectangle]
     Kubed [label="Kubed" shape=rectangle]
+    Knative [label="Knative" shape=rectangle]
+    Registry [label="Registry (Distribution)" shape=rectangle]
 
     Web [label="Web" shape=Mcircle]
 
@@ -94,19 +98,22 @@ digraph PairInstance {
     PowerDNS -> PowerDNSDB
     ExternalDNS -> PowerDNS [label="Configures DNS records"]
     CertManager -> PowerDNS [label="Validates wildcard LetsEncrypt dns01"]
-    MetalLB -> NginxIngressController [label="Provides IP"]
-    GoHttpServer -> NginxIngressController [label="Serves"]
-    RevealMultiplex -> NginxIngressController [label="Serves"]
-    CertManager -> NginxIngressController [label="Provides TLS for Ingresses served here"]
-    HelmOperator -> NginxIngressController [label="Deploys"]
+    MetalLB -> ContourIngressController [label="Provides IP"]
+    Registry -> ContourIngressController [label="Serves"]
+    GoHttpServer -> ContourIngressController [label="Serves"]
+    RevealMultiplex -> ContourIngressController [label="Serves"]
+    KubePrometheus -> ContourIngressController [label="Serves"]
+    CertManager -> ContourIngressController [label="Provides TLS for Ingresses served here"]
     HelmOperator -> KubePrometheus [label="Deploys"]
     HelmOperator -> GoHttpServer [label="Deploys"]
     PowerDNSDB -> LocalPathProvisioner [label="Provisions storage"]
+    Registry -> LocalPathProvisioner [label="Provisions storage"]
     Environment -> RevealMultiplex [label="Drives presentations"]
     Kubed -> CertManager [label="Syncs TLS certs across namespaces"]
+    Knative -> ContourIngressController [label="Service gateway"]
 
     PowerDNS -> Web [label="Serves public DNS records"]
-    NginxIngressController -> Web [label="Serves public traffic"]
+    ContourIngressController -> Web [label="Serves public traffic"]
 }
 #+end_src
 
