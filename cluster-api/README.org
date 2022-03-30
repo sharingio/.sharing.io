@@ -65,7 +65,7 @@ sed -i -e 's/namespace: default/namespace: knative-operator/g' ./manifests/knati
 
 metrics-server
 #+begin_src yaml :tangle ./manifests/metrics-server-values.yaml
-replicas: 3
+replicas: 1
 args:
   - --cert-dir=/tmp
   - --logtostderr

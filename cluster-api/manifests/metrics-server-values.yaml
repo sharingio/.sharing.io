@@ -1,6 +1,8 @@
-# Configure
 
-replicas: 3
+
+# metrics-server
+
+replicas: 1
 args:
   - --cert-dir=/tmp
   - --logtostderr
