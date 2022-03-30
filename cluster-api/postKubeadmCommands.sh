@@ -109,7 +109,7 @@ kubectl apply -f ./manifests/metallb-namespace.yaml
 kubectl apply -f ./manifests/metallb.yaml
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)" 2> /dev/null
 envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system apply -f -
-envsubst < ./manifests/metrics-server.yaml | kubectl apply -f -
+envsubst < ./manifests/metrics-server.yaml | kubectl -n kube-system apply -f -
 envsubst < ./manifests/kubed.yaml | kubectl apply -f -
 kubectl -n pair-system create secret generic distribution-auth --from-literal=htpasswd="$(htpasswd -Bbn "$SHARINGIO_PAIR_INSTANCE_REGISTRY_USER" "$SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD")" 2> /dev/null
 envsubst < ./manifests/distribution.yaml | kubectl apply -f -
