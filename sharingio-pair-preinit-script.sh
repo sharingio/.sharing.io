@@ -68,12 +68,13 @@ fi
 
 (
     until curl -s https://registry.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}; do
-        echo "${SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD}" | \
-            docker login \
-            "registry.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" \
-            --username "${SHARINGIO_PAIR_INSTANCE_REGISTRY_USER}" \
-            --password-stdin || true
+        sleep 1
     done
+    echo "${SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD}" | \
+        docker login \
+        "registry.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" \
+        --username "${SHARINGIO_PAIR_INSTANCE_REGISTRY_USER}" \
+        --password-stdin || true
 )&
 
 kubectl create secret docker-registry \
