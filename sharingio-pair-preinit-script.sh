@@ -66,4 +66,18 @@ if [ -n "${SHARINGIO_PAIR_INIT_EXTRAS:-}" ]; then
     done
 fi
 
-echo "${SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD}" | docker login "registry.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" --username "${SHARINGIO_PAIR_INSTANCE_REGISTRY_USER}" --password-stdin
+echo "${SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD}" | \
+    docker login \
+    "registry.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" \
+    --username "${SHARINGIO_PAIR_INSTANCE_REGISTRY_USER}" \
+    --password-stdin || true
+
+kubectl create secret docker-registry \
+    registry \
+    --docker-server="registry.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}" \
+    --docker-username="${SHARINGIO_PAIR_INSTANCE_REGISTRY_USER}" \
+    --docker-password="${SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD}" \
+    --docker-email="${SHARINGIO_PAIR_INSTANCE_SETUP_EMAIL}" \
+    --dry-run=client -o yaml \
+    | kubectl apply -f -
+kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"registry\"}]}"
