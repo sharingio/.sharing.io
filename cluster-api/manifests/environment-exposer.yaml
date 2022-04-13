@@ -64,7 +64,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: environment-exposer
-          image: registry.gitlab.com/sharingio/environment/exposer:2022.03.30.1618
+          image: registry.gitlab.com/sharingio/environment/exposer:2022.04.13.1121
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 1000

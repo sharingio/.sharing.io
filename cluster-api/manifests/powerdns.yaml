@@ -501,7 +501,7 @@ spec:
       serviceAccountName: powerdns
       containers:
         - name: powerdns-init
-          image: registry.gitlab.com/sharingio/environment/environment:2022.03.30.1618
+          image: registry.gitlab.com/sharingio/environment/environment:2022.04.13.1121
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
