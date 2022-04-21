@@ -4,9 +4,9 @@ metadata:
   name: knative-serving
   namespace: knative-serving
 spec:
-  version: 1.3.0
+  version: 1.4.0
   additionalManifests:
-    - URL: https://github.com/knative/net-certmanager/releases/download/knative-v1.3.0/release.yaml
+    - URL: https://github.com/knative/net-certmanager/releases/download/knative-v1.4.0/release.yaml
   ingress:
     contour:
       enabled: true
