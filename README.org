@@ -24,7 +24,7 @@ Here's a list of software installed in the order that it is brought up
 - [[https://github.com/kubeops/kubed][Kubed]] :: sync secrets between namespaces
 - [[https://github.com/sharingio/environment][Environment]] :: a containerised environment with many tools useful for Pairing, such as tmate, Emacs, Kubernetes utils, and development utilities
 - [[https://github.com/sharingio/environment/tree/master/cmd/environment-exporter][Environment-Exporter]] :: a webserver for serving a JSON list of processes that are listening on ports
-- [[https://github.com/kubernetes/ingress-nginx/][nginx-ingress-controller]] :: a Kubernetes ingress controller for bringing traffic into the cluster
+- [[https://projectcontour.io/][Contour Ingress Controller]] :: a Kubernetes ingress controller for bringing traffic into the cluster
 - [[https://github.com/kubernetes-sigs/external-dns][External-DNS]] :: a declarative way of managing DNS records
 - [[https://www.powerdns.com/][PowerDNS]] :: a DNS server to own the records for {name}.pair.sharing.io
 - [[https://github.com/sharingio/environment/tree/master/cmd/environment-exposer][Environment-Exposer]] :: a controller for mananging Kubernetes Service and Ingress resources based on the the results of environment-exporter, in order to expose the ports inside Environment to the public internet
