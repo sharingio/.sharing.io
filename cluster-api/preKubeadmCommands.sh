@@ -38,6 +38,12 @@ mkdir -p /etc/kubernetes/pki
 cp ./manifests/audit-policy.yaml /etc/kubernetes/pki/audit-policy.yaml
 cp ./manifests/audit-sink.yaml /etc/kubernetes/pki/audit-sink.yaml
 
+# add host overlay
+(
+  cd ../host
+  cp -v -r . /
+)
+
 # ensure mounts
 sed -ri '/\\sswap\\s/s/^#?/#/' /etc/fstab
 swapoff -a
@@ -123,9 +129,3 @@ net.ipv4.ip_forward                 = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 sysctl --system
-
-# add host overlay
-(
-  cd ../host
-  cp -v -r . /
-)
