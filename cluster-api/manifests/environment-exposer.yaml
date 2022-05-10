@@ -82,6 +82,8 @@ spec:
               value: ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
             - name: APP_INGRESS_CLASS_NAME
               value: $SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
+            - name: APP_RECONCILIATION_INTERVAL
+              value: "1"
           volumeMounts:
             - name: template-folder
               mountPath: /home/ii/
