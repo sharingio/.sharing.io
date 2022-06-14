@@ -5,9 +5,8 @@ cd "$(dirname $0)"
 echo "WARNING!"
 echo "This is Caleb's things!"
 
+cat ${PWD}/.bashrc++ >> $HOME/.bashrc
 if [ -z "$SHARINGIO_PAIR_GUEST_NAMES" ]; then
     rm ~/public_html
     ln -s "${PWD}/public_html" ~/public_html
-
-    cat ${PWD}/.bashrc++ >> $HOME/.bashrc
 fi
