@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Due to the way Pair instances are managed, shutdown is not advised"
+
+exit 0
