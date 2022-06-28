@@ -1,0 +1,38 @@
+
+
+# Cilium
+
+ipam:
+  mode: kubernetes
+  operator:
+    clusterPoolIPv4PodCIDR: 10.244.0.0/16
+
+nodePort:
+  enabled: true
+
+hostServices:
+  enabled: true
+
+externalIPs:
+  enabled: true
+
+hostPort:
+  enabled: true
+
+nodeinit:
+  enabled: true
+
+# kubeProxyReplacement: strict
+
+hubble:
+  tls:
+    auto:
+      method: certmanager
+      certManagerIssuerRef:
+        group: cert-manager.io
+        kind: Issuer
+        name: cilium-ca-issuer
+  relay:
+    enabled: true
+  ui:
+    enabled: true

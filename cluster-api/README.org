@@ -20,19 +20,48 @@ curl -o ./manifests/cert-manager.yaml -L https://github.com/jetstack/cert-manage
 #+end_src
 
 Cilium
+#+begin_src yaml :tangle ./values/cilium.yaml
+ipam:
+  mode: kubernetes
+  operator:
+    clusterPoolIPv4PodCIDR: 10.244.0.0/16
+
+nodePort:
+  enabled: true
+
+hostServices:
+  enabled: true
+
+externalIPs:
+  enabled: true
+
+hostPort:
+  enabled: true
+
+nodeinit:
+  enabled: true
+
+# kubeProxyReplacement: strict
+
+hubble:
+  tls:
+    auto:
+      method: certmanager
+      certManagerIssuerRef:
+        group: cert-manager.io
+        kind: Issuer
+        name: cilium-ca-issuer
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+#+end_src
 #+begin_src shell
 helm repo add cilium https://helm.cilium.io/
 helm template cilium cilium/cilium \
-    --version 1.10.5 \
+    --version 1.11.6 \
     --namespace kube-system \
-    --set ipam.mode=kubernetes \
-    --set ipam.operator.clusterPoolIPv4PodCIDR=10.244.0.0/16 \
-    --set nodePort.enabled=true \
-    --set kubeProxyReplacement=partial \
-    --set hostServices.enabled=true \
-    --set externalIPs.enabled=true \
-    --set hostPort.enabled=true \
-    --set nodeinit.enabled=true \
+    -f ./values/cilium.yaml \
     > ./manifests/cilium.yaml
 #+end_src
 
