@@ -44,6 +44,7 @@ EOF
 
 NAMESPACES=(
   default
+  kube-system
   external-dns
   metallb
   nginx-ingress
@@ -87,84 +88,90 @@ done
 # allow scheduling
 kubectl taint node --all node-role.kubernetes.io/master-
 
-# add packet-cloud-config for picking up some values later
-kubectl -n kube-system create secret generic packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}" --dry-run=client -o yaml | \
-  kubectl apply -f -
+while true; do
+  BASEDNSNAME_RESOLVES=$([ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; echo $?)
 
-kubectl -n default create configmap pair-instance --from-literal=username="${SHARINGIO_PAIR_INSTANCE_SETUP_USER}" --dry-run=client -o yaml | \
-  kubectl apply -f -
+  if [ -f /tmp/.sharingio-init-reconcile-break ]; then
+    break
+  fi
 
-# setup host path storage
-kubectl apply -f ./manifests/local-path-storage.yaml
-kubectl patch storageclasses.storage.k8s.io local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  # add packet-cloud-config for picking up some values later
+  kubectl -n kube-system create secret generic packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}" --dry-run=client -o yaml | \
+    kubectl apply -f -
 
-# handy things
-kubectl apply -f ./manifests/external-dns-crd.yaml
-kubectl apply -f ./manifests/cert-manager.yaml
-kubectl apply -f ./manifests/cilium-issuer.yaml
-kubectl apply -f ./manifests/cilium.yaml
-kubectl apply -f ./manifests/helm-operator-crds.yaml
-kubectl -n helm-operator apply -f ./manifests/helm-operator.yaml
-kubectl get configmap kube-proxy -n kube-system -o yaml | sed -e "s/strictARP: false/strictARP: true/" | kubectl apply -f - -n kube-system
-kubectl apply -f ./manifests/metallb-namespace.yaml
-kubectl apply -f ./manifests/metallb.yaml
-kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)" 2> /dev/null
-envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system apply -f -
-envsubst < ./manifests/metrics-server.yaml | kubectl -n kube-system apply -f -
-envsubst < ./manifests/kubed.yaml | kubectl apply -f -
-kubectl -n pair-system create secret generic distribution-auth --from-literal=htpasswd="$(htpasswd -Bbn "$SHARINGIO_PAIR_INSTANCE_REGISTRY_USER" "$SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD")" 2> /dev/null
-envsubst < ./manifests/distribution.yaml | kubectl apply -f -
-envsubst < ./manifests/local-registry-hosting.yaml | kubectl apply -f -
+  kubectl -n default create configmap pair-instance --from-literal=username="${SHARINGIO_PAIR_INSTANCE_SETUP_USER}" --dry-run=client -o yaml | \
+    kubectl apply -f -
 
-# Environment
-envsubst < ./manifests/environment.yaml | kubectl apply -f -
+  # setup host path storage
+  kubectl apply -f ./manifests/local-path-storage.yaml
+  kubectl patch storageclasses.storage.k8s.io local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
-# Environment Exposer
-envsubst < ./manifests/environment-exposer.yaml | kubectl apply -f -
+  # handy things
+  kubectl apply -f ./manifests/external-dns-crd.yaml
+  kubectl apply -f ./manifests/cert-manager.yaml
+  kubectl apply -f ./manifests/cilium-issuer.yaml
+  envsubst '$SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME $SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME' < ./manifests/cilium.yaml | kubectl apply -f -
+  kubectl apply -f ./manifests/helm-operator-crds.yaml
+  kubectl -n helm-operator apply -f ./manifests/helm-operator.yaml
+  kubectl get configmap kube-proxy -n kube-system -o yaml | sed -e "s/strictARP: false/strictARP: true/" | kubectl apply -f - -n kube-system
+  kubectl apply -f ./manifests/metallb-namespace.yaml
+  kubectl apply -f ./manifests/metallb.yaml
+  kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)" 2> /dev/null
+  envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system apply -f -
+  envsubst < ./manifests/metrics-server.yaml | kubectl -n kube-system apply -f -
+  envsubst < ./manifests/kubed.yaml | kubectl apply -f -
+  kubectl -n pair-system create secret generic distribution-auth --from-literal=htpasswd="$(htpasswd -Bbn "$SHARINGIO_PAIR_INSTANCE_REGISTRY_USER" "$SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD")" 2> /dev/null
+  envsubst < ./manifests/distribution.yaml | kubectl apply -f -
+  envsubst < ./manifests/local-registry-hosting.yaml | kubectl apply -f -
 
-# prometheus + grafana
-envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
+  # Environment
+  envsubst < ./manifests/environment.yaml | kubectl apply -f -
 
-# www
-envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
-envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
+  # Environment Exposer
+  envsubst < ./manifests/environment-exposer.yaml | kubectl apply -f -
 
-# scale the ingress controller across all the nodes
+  # prometheus + grafana
+  envsubst < ./manifests/kube-prometheus.yaml | kubectl apply -f -
 
-# Instance managed DNS
-envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
-envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
+  # www
+  envsubst < ./manifests/go-http-server.yaml | kubectl apply -f -
+  envsubst < ./manifests/reveal-multiplex.yaml | kubectl apply -f -
 
-# PowerDNS
-envsubst '${KUBERNETES_CONTROLPLANE_ENDPOINT} ${MACHINE_IP} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${KUBERNETES_CONTROLPLANE_ENDPOINT}' < ./manifests/powerdns.yaml | kubectl apply -f -
+  # scale the ingress controller across all the nodes
 
-# Contour ingress gateway
-kubectl apply -f ./manifests/contour.yaml
-kubectl -n contour-external patch svc/envoy -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
+  # Instance managed DNS
+  envsubst < ./manifests/external-dns.yaml | kubectl apply -f -
+  envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 
-# Knative Operator
-kubectl apply -f ./manifests/knative-operator.yaml
+  # PowerDNS
+  envsubst '${KUBERNETES_CONTROLPLANE_ENDPOINT} ${MACHINE_IP} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${KUBERNETES_CONTROLPLANE_ENDPOINT}' < ./manifests/powerdns.yaml | kubectl apply -f -
 
-# Knative Serving
-envsubst < ./manifests/knative-serving.yaml | kubectl apply -f -
+  # Contour ingress gateway
+  kubectl apply -f ./manifests/contour.yaml
+  kubectl -n contour-external patch svc/envoy -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
 
-time (
-  until [ "$(dig A ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} +short)" = "${KUBERNETES_CONTROLPLANE_ENDPOINT}" ]; do
-      echo "BaseDNSName does not resolve to Instance IP yet"
-      sleep 1
-  done
-)
-envsubst < ./manifests/certs.yaml | kubectl apply -f -
+  # Knative Operator
+  kubectl apply -f ./manifests/knative-operator.yaml
 
-kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
+  # Knative Serving
+  envsubst < ./manifests/knative-serving.yaml | kubectl apply -f -
 
-time (
-  while true; do
+  if [ ! "$BASEDNSNAME_RESOLVES" -eq 0 ]; then
+    continue
+  fi
+  envsubst < ./manifests/certs.yaml | kubectl apply -f -
+
+  kubectl -n default create configmap sharingio-pair-init-complete 2> /dev/null
+
+  time (
+    while true; do
       conditions=$(kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" get cert letsencrypt-prod -o=jsonpath='{.status.conditions[0]}')
       if [ "$(echo $conditions | jq -r .type)" = "Ready" ] && [ "$(echo $conditions | jq -r .status)" = "True" ]; then
         break
       fi
       echo "Waiting for valid TLS cert"
       sleep 1
-  done
-)
+    done
+  )
+  break
+done
