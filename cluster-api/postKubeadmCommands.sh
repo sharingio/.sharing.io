@@ -56,11 +56,12 @@ NAMESPACES=(
   $SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE
 )
 
-# use kubeconfig
-mkdir -p /root/.kube
-cp -if /etc/kubernetes/admin.conf /root/.kube/config
-export KUBECONFIG=/root/.kube/config
-
+if [ "$(id -u)" = "0" ]; then
+  # use kubeconfig
+  mkdir -p /root/.kube
+  cp -if /etc/kubernetes/admin.conf /root/.kube/config
+  export KUBECONFIG=/root/.kube/config
+fi
 # ensure correct directory
 pwd
 cd $(dirname $0)
