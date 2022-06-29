@@ -1145,33 +1145,6 @@ spec:
           name: hubble-ui-nginx
         name: hubble-ui-nginx-conf
 ---
-# Source: cilium/templates/hubble-ui/ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: hubble-ui
-  namespace: kube-system
-  labels:
-    k8s-app: hubble-ui
-  annotations:
-    kubernetes.io/ingress.class: $SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
-spec:
-  tls:
-    - hosts:
-      - hubble.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
-      secretName: letsencrypt-prod
-  rules:
-    - host: hubble.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: hubble-ui
-                port:
-                  name: http
----
 # Source: cilium/templates/hubble/tls-certmanager/relay-client-secret.yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
