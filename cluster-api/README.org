@@ -55,6 +55,17 @@ hubble:
     enabled: true
   ui:
     enabled: true
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: $SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME
+      hosts:
+        - hubble.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+      tls:
+        - hosts:
+            - hubble.$SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME
+          secretName: letsencrypt-prod
+
 #+end_src
 #+begin_src shell
 helm repo add cilium https://helm.cilium.io/
