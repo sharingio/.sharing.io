@@ -10,7 +10,8 @@ HASH_CRI_DOCKERD="dfd90922a9025e02b483a60849e59906d13a975df527775dba5f0e9fceffcc
 PACKAGES=(
   ca-certificates 
   socat 
-  jq 
+  jq
+  yq
   ebtables 
   apt-transport-https 
   cloud-utils 
@@ -74,6 +75,8 @@ echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 apt-key fingerprint 0EBFCD88
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
+add-apt-repository ppa:rmescandon/yq --yes
 apt-get update -y
 TRIMMED_KUBERNETES_VERSION=$(echo $KUBERNETES_VERSION | sed 's/\./\\./g' | sed 's/^v//')
 RESOLVED_KUBERNETES_VERSION=$(apt-cache policy kubelet | awk -v VERSION=${TRIMMED_KUBERNETES_VERSION} '$1~ VERSION { print $1 }' | head -n1)
@@ -86,7 +89,7 @@ curl -o /tmp/cri-dockerd.deb -L https://github.com/Mirantis/cri-dockerd/releases
 if [ "$(sha256sum /tmp/cri-dockerd.deb | cut -d ' ' -f1)" = "${HASH_CRI_DOCKERD:-}" ]; then
   apt install -y /tmp/cri-dockerd.deb
   # hacky for now but should swap out the socket
-  yq e --inplace 'select(has("nodeRegistration")).nodeRegistration.kubeletExtraArgs.cri-socket = "/var/run/cri-docker.sock"' /tmp/e.yaml
+  yq e --inplace 'select(has("nodeRegistration")).nodeRegistration.criSocket = "unix:///var/run/cri-dockerd.sock"' /var/run/kubeadm/kubeadm.yaml
 else
   echo "Failed to download and install the correct cri-dockerd, the hash doesn't match"
 fi
