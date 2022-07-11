@@ -6,6 +6,7 @@
 # MACHINE_IP
 # SHARINGIO_PAIR_INSTANCE_CONTAINER_REGISTRY_MIRRORS
 
+HASH_CRI_DOCKERD="dfd90922a9025e02b483a60849e59906d13a975df527775dba5f0e9fceffcceb"
 PACKAGES=(
   ca-certificates 
   socat 
@@ -80,6 +81,15 @@ apt-get install -y ${PACKAGES[*]} \
   kubelet=${RESOLVED_KUBERNETES_VERSION} \
   kubeadm=${RESOLVED_KUBERNETES_VERSION} \
   kubectl=${RESOLVED_KUBERNETES_VERSION} 
+
+curl -o /tmp/cri-dockerd.deb -L https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.3/cri-dockerd_0.2.3.3-0.ubuntu-jammy_amd64.deb
+if [ "$(sha256sum /tmp/cri-dockerd.deb | cut -d ' ' -f1)" = "${HASH_CRI_DOCKERD:-}" ]; then
+  apt install -y /tmp/cri-dockerd.deb
+  # hacky for now but should swap out the socket
+  yq e --inplace 'select(has("nodeRegistration")).nodeRegistration.kubeletExtraArgs.cri-socket = "/var/run/cri-docker.sock"' /tmp/e.yaml
+else
+  echo "Failed to download and install the correct cri-dockerd, the hash doesn't match"
+fi
 
 # configure container runtime
 cat <<EOF | tee /etc/modules-load.d/containerd.conf
