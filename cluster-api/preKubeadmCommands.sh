@@ -89,6 +89,14 @@ curl -o /tmp/cri-dockerd.deb -L https://github.com/Mirantis/cri-dockerd/releases
 if [ "$(sha256sum /tmp/cri-dockerd.deb | cut -d ' ' -f1)" = "${HASH_CRI_DOCKERD:-}" ]; then
   apt install -y /tmp/cri-dockerd.deb
   # hacky for now but should swap out the socket
+  mkdir -p /etc/systemd/system/cri-docker.service.d/
+  cat <<EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/cri-dockerd --cri-dockerd-root-directory=/var/lib/dockershim --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin --container-runtime-endpoint unix:///var/run/cri-dockerd.sock
+EOF
+  systemctl daemon-reload
+  systemctl restart cri-docker.service
   yq e --inplace 'select(has("nodeRegistration")).nodeRegistration.criSocket = "unix:///var/run/cri-dockerd.sock"' /var/run/kubeadm/kubeadm.yaml
 else
   echo "Failed to download and install the correct cri-dockerd, the hash doesn't match"
