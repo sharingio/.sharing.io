@@ -80,6 +80,10 @@ spec:
       containers:
         - name: external-dns
           image: k8s.gcr.io/external-dns/external-dns:v0.10.0
+          envFrom:
+            - configMapRef:
+                name: pair-init-config
+                optional: false
           args:
             - --source=crd
             - --source=ingress
@@ -95,7 +99,7 @@ spec:
             - --managed-record-types=NS
             - --managed-record-types=TXT
             - --managed-record-types=SRV
-            - --domain-filter=${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
-            - --txt-owner-id=${SHARINGIO_PAIR_INSTANCE_SETUP_USER}
+            - --domain-filter=$(SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME)
+            - --txt-owner-id=$(SHARINGIO_PAIR_INSTANCE_SETUP_USER)
             - --pdns-api-key=pairingissharing
             - --pdns-server=http://powerdns-service-api.pair-system:8081

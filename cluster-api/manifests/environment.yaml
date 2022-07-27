@@ -78,7 +78,10 @@ spec:
               value: "${SHARINGIO_PAIR_INSTANCE_SETUP_GITHUBOAUTHTOKEN}"
             - name: MULTIPLEX_URL
               value: "https://multiplex.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
-            $SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
+          envFrom:
+            - configMapRef:
+                name: environment-user-env
+                optional: true
           image: registry.gitlab.com/sharingio/environment/environment:2022.08.30.1450
           imagePullPolicy: IfNotPresent
           name: environment

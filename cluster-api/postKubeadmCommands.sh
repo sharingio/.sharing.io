@@ -90,6 +90,9 @@ kubectl taint node --all node-role.kubernetes.io/master-
 # add packet-cloud-config for picking up some values later
 kubectl -n kube-system create secret generic packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}" --dry-run=client -o yaml | \
   kubectl apply -f -
+kubectl -n pair-system create configmap pair-init-config \
+  --from-env-file=<(cat "${ENV_FILE}" | sort | uniq | sed 's/export //g' | sed 's/"//g' | grep -E '[A-Z]+=.*') --dry-run=client -o yaml |
+  kubectl apply -f -
 
 kubectl -n default create configmap pair-instance --from-literal=username="${SHARINGIO_PAIR_INSTANCE_SETUP_USER}" --dry-run=client -o yaml | \
   kubectl apply -f -
@@ -103,19 +106,22 @@ kubectl apply -f ./manifests/external-dns-crd.yaml
 kubectl apply -f ./manifests/cert-manager.yaml
 kubectl apply -f ./manifests/weavenet.yaml
 kubectl apply -f ./manifests/helm-operator-crds.yaml
+kubectl apply -f ./manifests/kubed.yaml
 kubectl -n helm-operator apply -f ./manifests/helm-operator.yaml
 kubectl get configmap kube-proxy -n kube-system -o yaml | sed -e "s/strictARP: false/strictARP: true/" | kubectl apply -f - -n kube-system
 kubectl apply -f ./manifests/metallb-namespace.yaml
 kubectl apply -f ./manifests/metallb.yaml
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)" 2> /dev/null
 envsubst < ./manifests/metallb-system-config.yaml | kubectl -n metallb-system apply -f -
-envsubst < ./manifests/metrics-server.yaml | kubectl -n kube-system apply -f -
-envsubst < ./manifests/kubed.yaml | kubectl apply -f -
+kubectl -n kube-system apply -f ./manifests/metrics-server.yaml
 kubectl -n pair-system create secret generic distribution-auth --from-literal=htpasswd="$(htpasswd -Bbn "$SHARINGIO_PAIR_INSTANCE_REGISTRY_USER" "$SHARINGIO_PAIR_INSTANCE_REGISTRY_PASSWORD")" 2> /dev/null
 envsubst < ./manifests/distribution.yaml | kubectl apply -f -
 envsubst < ./manifests/local-registry-hosting.yaml | kubectl apply -f -
 
 # Environment
+kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USERLOWERCASE}" create configmap environment-user-env \
+  --from-env-file=/root/.sharing-io-pair-user.env --dry-run=client -o yaml \
+  | kubectl apply -f -
 envsubst < ./manifests/environment.yaml | kubectl apply -f -
 
 # Environment Exposer
