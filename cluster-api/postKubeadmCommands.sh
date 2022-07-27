@@ -90,6 +90,12 @@ kubectl taint node --all node-role.kubernetes.io/master-
 # add packet-cloud-config for picking up some values later
 kubectl -n kube-system create secret generic packet-cloud-config --from-literal=cloud-sa.json="{\"projectID\": \"$EQUINIX_METAL_PROJECT\"}" --dry-run=client -o yaml | \
   kubectl apply -f -
+kubectl -n "${SHARINGIO_PAIR_INSTANCE_SETUP_USER}" create configmap pair-init-config \
+  --from-env-file=<(cat "${ENV_FILE}" | sort | uniq | sed 's/export //g' | sed 's/"//g' | grep -E '[A-Z]+=.*') --dry-run=client -o yaml |
+  kubectl apply -f -
+kubectl -n external-dns create configmap pair-init-config \
+  --from-env-file=<(cat "${ENV_FILE}" | sort | uniq | sed 's/export //g' | sed 's/"//g' | grep -E '[A-Z]+=.*') --dry-run=client -o yaml |
+  kubectl apply -f -
 kubectl -n pair-system create configmap pair-init-config \
   --from-env-file=<(cat "${ENV_FILE}" | sort | uniq | sed 's/export //g' | sed 's/"//g' | grep -E '[A-Z]+=.*') --dry-run=client -o yaml |
   kubectl apply -f -
