@@ -1,2 +1,6 @@
 #!/bin/bash
-kubectl -n "$(kubectl -n default get configmap pair-instance -o=jsonpath="{.data.username}" | tr "[:upper:]" "[:lower:]")" exec -it statefulset/environment -- attach
+
+. <(sudo cat {/var/run/host,}/root/.sharing-io-pair-init.env)
+export KUBE_CONTEXT="kubernetes-admin@${SHARINGIO_PAIR_INSTANCE_NAME}"
+USERNAME="$(kubectl --context "${KUBE_CONTEXT:-}" -n default get configmap pair-instance -o=jsonpath="{.data.username}" | tr "[:upper:]" "[:lower:]")"
+kubectl --context "${KUBE_CONTEXT:-}" -n "${USERNAME:-}" exec -it statefulset/environment -- attach
