@@ -79,7 +79,7 @@ spec:
             - name: MULTIPLEX_URL
               value: "https://multiplex.${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}"
             $SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED
-          image: registry.gitlab.com/sharingio/environment/environment:2022.08.30.1450
+          image: registry.gitlab.com/sharingio/environment/environment:2022.09.27.0958
           imagePullPolicy: IfNotPresent
           name: environment
           volumeMounts:
@@ -94,7 +94,7 @@ spec:
             - mountPath: /var/run/host
               name: host
         - name: environment-exporter
-          image: registry.gitlab.com/sharingio/environment/exporter:2022.08.30.1450
+          image: registry.gitlab.com/sharingio/environment/exporter:2022.09.27.0958
           imagePullPolicy: IfNotPresent
           env:
             - name: APP_PORT
