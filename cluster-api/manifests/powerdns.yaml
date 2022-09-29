@@ -243,13 +243,6 @@ spec:
                 - /bin/sh
                 - -c
                 - pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
-          readinessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - nc -vz powerdns-service-db 3306
-            initialDelaySeconds: 20
           lifecycle:
             postStart:
               exec:
@@ -387,6 +380,9 @@ spec:
             - -x
             - -c
             - |
+              until nc -vz powerdns-service-db 3306; do
+                sleep 1s
+              done
               MYSQL_COMMAND="mysql -h ${MYSQL_ENV_MYSQL_HOST} -P 3306 -u ${MYSQL_ENV_MYSQL_USER} -p${MYSQL_ENV_MYSQL_PASSWORD}"
               $MYSQL_COMMAND -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_ENV_MYSQL_DATABASE}"
               MYSQL_CHECK_IF_HAS_TABLE="SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = '${MYSQL_ENV_MYSQL_DATABASE}';"
