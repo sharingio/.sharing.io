@@ -255,7 +255,7 @@ spec:
                       sleep 1
                       a=$[a+1]
                       echo 'stage: '$a
-                      if nc -vz powerdns-service-db 3306; then
+                      if nc -w 1 -vz powerdns-service-db 3306; then
                         (! pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}) && pdnsutil create-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
                       fi
                       if ! pdnsutil list-tsig-keys pair | grep -E 'pair..*'; then
@@ -380,7 +380,7 @@ spec:
             - -x
             - -c
             - |
-              until nc -vz powerdns-service-db 3306; do
+              until nc -w 1 -vz powerdns-service-db 3306; do
                 sleep 1s
               done
               MYSQL_COMMAND="mysql -h ${MYSQL_ENV_MYSQL_HOST} -P 3306 -u ${MYSQL_ENV_MYSQL_USER} -p${MYSQL_ENV_MYSQL_PASSWORD}"
