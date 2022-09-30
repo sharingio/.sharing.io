@@ -104,18 +104,6 @@ spec:
     app.kubernetes.io/instance: powerdns
     powerdns.com/role: api
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: powerdns-db
-  namespace: pair-system
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -139,6 +127,8 @@ spec:
         app.kubernetes.io/instance: powerdns
         powerdns.com/role: db
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
       # securityContext:
       # fsGroup: 1000
       containers:
@@ -175,8 +165,8 @@ spec:
                   key: MYSQL_PASS
       volumes:
         - name: powerdns-db
-          persistentVolumeClaim:
-            claimName: powerdns-db
+          hostPath:
+            path: /var/lib/powerdns-postgresql
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -233,6 +223,8 @@ spec:
         app.kubernetes.io/instance: powerdns
         powerdns.com/role: api
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
       containers:
         - name: powerdns
           image: "pschiffe/pdns-mysql:4.3-alpine"
