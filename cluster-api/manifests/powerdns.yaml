@@ -104,18 +104,6 @@ spec:
     app.kubernetes.io/instance: powerdns
     powerdns.com/role: api
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: powerdns-db
-  namespace: pair-system
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -139,6 +127,8 @@ spec:
         app.kubernetes.io/instance: powerdns
         powerdns.com/role: db
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
       # securityContext:
       # fsGroup: 1000
       containers:
@@ -175,8 +165,8 @@ spec:
                   key: MYSQL_PASS
       volumes:
         - name: powerdns-db
-          persistentVolumeClaim:
-            claimName: powerdns-db
+          hostPath:
+            path: /var/lib/powerdns-postgresql
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -233,6 +223,8 @@ spec:
         app.kubernetes.io/instance: powerdns
         powerdns.com/role: api
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
       containers:
         - name: powerdns
           image: "pschiffe/pdns-mysql:4.3-alpine"
@@ -243,13 +235,6 @@ spec:
                 - /bin/sh
                 - -c
                 - pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
-          readinessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - nc -vz powerdns-service-db 3306
-            initialDelaySeconds: 20
           lifecycle:
             postStart:
               exec:
@@ -262,7 +247,7 @@ spec:
                       sleep 1
                       a=$[a+1]
                       echo 'stage: '$a
-                      if nc -vz powerdns-service-db 3306; then
+                      if nc -w 1 -vz powerdns-service-db 3306; then
                         (! pdnsutil list-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}) && pdnsutil create-zone ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}
                       fi
                       if ! pdnsutil list-tsig-keys pair | grep -E 'pair..*'; then
@@ -387,6 +372,9 @@ spec:
             - -x
             - -c
             - |
+              until nc -w 1 -vz powerdns-service-db 3306; do
+                sleep 1s
+              done
               MYSQL_COMMAND="mysql -h ${MYSQL_ENV_MYSQL_HOST} -P 3306 -u ${MYSQL_ENV_MYSQL_USER} -p${MYSQL_ENV_MYSQL_PASSWORD}"
               $MYSQL_COMMAND -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_ENV_MYSQL_DATABASE}"
               MYSQL_CHECK_IF_HAS_TABLE="SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = '${MYSQL_ENV_MYSQL_DATABASE}';"
