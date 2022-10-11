@@ -32,8 +32,8 @@ export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES=$((1 + ${__SHARINGIO_PAIR_KUBERNETES_
 export SHARINGIO_PAIR_INSTANCE_TOTAL_NODES_MAX_REPLICAS=$((SHARINGIO_PAIR_INSTANCE_TOTAL_NODES * SHARINGIO_PAIR_INSTANCE_TOTAL_NODES))
 export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="nginx"
 export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Real-Ip"
-export KNATIVE_ENABLED="$(echo "$SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED" | yq e '.[] | select(.name = "SHARINGIO_PAIR_INIT_EXTRAS")| .value' -P - | grep -q -E '(^| )knative( |$)')"
-if [[ "$KNATIVE_ENABLED" -eq 0 ]]; then
+export KNATIVE_ENABLED="$(echo "$SHARINGIO_PAIR_INSTANCE_SETUP_ENV_EXPANDED" | yq e '.[] | select(.name = "SHARINGIO_PAIR_INIT_EXTRAS")| .value' -P - | grep -q -E '(^| )knative( |$)' && echo true || echo false)"
+if [[ "$KNATIVE_ENABLED" = true ]]; then
   export SHARINGIO_PAIR_INSTANCE_INGRESS_CLASS_NAME="contour-external"
   export SHARINGIO_PAIR_INSTANCE_INGRESS_REAL_IP_HEADER="X-Envoy-External-Address"
 fi
@@ -144,7 +144,7 @@ envsubst < ./manifests/dnsendpoint.yaml | kubectl apply -f -
 # PowerDNS
 envsubst '${KUBERNETES_CONTROLPLANE_ENDPOINT} ${MACHINE_IP} ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME} ${KUBERNETES_CONTROLPLANE_ENDPOINT}' < ./manifests/powerdns.yaml | kubectl apply -f -
 
-if [[ "$KNATIVE_ENABLED" -eq 0 ]]; then
+if [[ "$KNATIVE_ENABLED" = true ]]; then
   # Contour ingress gateway
   kubectl apply -f ./manifests/extras/knative/contour.yaml
   kubectl -n contour-external patch svc/envoy -p "{\"spec\":{\"externalIPs\":[\"${KUBERNETES_CONTROLPLANE_ENDPOINT}\",\"${MACHINE_IP}\"]}}"
