@@ -1,0 +1,49 @@
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: knative-serving
+spec:
+  version: 1.6.0
+  additionalManifests:
+    - URL: https://github.com/knative/net-certmanager/releases/download/knative-v1.6.0/release.yaml
+  ingress:
+    contour:
+      enabled: true
+  config:
+    network:
+      ingress-class: contour.ingress.networking.knative.dev
+      clusteringress.class: contour.ingress.networking.knative.dev
+      certificate-provider: cert-manager
+      autocreate-cluster-domain-claims: "true"
+      auto-tls: Enabled
+      default-external-scheme: HTTP
+      http-protocol: Enabled
+      # TODO(BobyMCbobs) figure out saving of all letsencrypt-prod certs
+      # namespace-wildcard-cert-selector: |
+      #   {
+      #       "matchExpressions": [
+      #           {
+      #               "values": [
+      #                   "true"
+      #               ],
+      #               "operator": "NotIn",
+      #               "key": "networking.knative.dev/disableWildcardCert"
+      #           },
+      #           {
+      #               "values": [
+      #                   "kube-system"
+      #               ],
+      #               "operator": "NotIn",
+      #               "key": "kubernetes.io/metadata.name"
+      #           }
+      #       ]
+      #   }
+    defaults:
+      container-name-template: "{{.Name}}"
+    domain:
+      ${SHARINGIO_PAIR_INSTANCE_SETUP_BASEDNSNAME}: ""
+    certmanager:
+      issuerRef: |
+        kind: ClusterIssuer
+        name: letsencrypt-prod-without-selector
