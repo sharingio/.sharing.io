@@ -81,6 +81,9 @@ apt-get install -y ${PACKAGES[*]} \
   kubeadm=${RESOLVED_KUBERNETES_VERSION} \
   kubectl=${RESOLVED_KUBERNETES_VERSION} 
 
+curl -L -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.28.1/yq_linux_amd64
+chmod +x /usr/local/bin/yq
+
 # configure container runtime
 cat <<EOF | tee /etc/modules-load.d/containerd.conf
 overlay

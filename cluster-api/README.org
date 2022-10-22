@@ -46,23 +46,6 @@ External-DNS
 curl -o ./manifests/external-dns-crd.yaml -L https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.8.0/docs/contributing/crd-source/crd-manifest.yaml
 #+end_src
 
-Contour
-#+begin_src shell
-curl \
-    -o ./manifests/contour.yaml \
-    -L https://github.com/knative/net-contour/releases/download/knative-v1.6.0/contour.yaml
-#+end_src
-
-Knative-Operator
-#+begin_src shell
-# Knative Operator
-VERSION=1.6.0
-curl \
-    -o ./manifests/knative-operator.yaml \
-    -L "https://github.com/knative/operator/releases/download/knative-v${VERSION}/operator.yaml"
-sed -i -e 's/namespace: default/namespace: knative-operator/g' ./manifests/knative-operator.yaml
-#+end_src
-
 metrics-server
 #+begin_src yaml :tangle ./manifests/metrics-server-values.yaml
 replicas: 1
@@ -89,6 +72,22 @@ helm template \
 
 * Extras
 #+begin_src shell
-mkdir -p manifests/extras
+mkdir -p manifests/extras/{knative,}
 #+end_src
 
+Contour
+#+begin_src shell
+curl \
+    -o ./manifests/extras/knative/contour.yaml \
+    -L https://github.com/knative/net-contour/releases/download/knative-v1.6.0/contour.yaml
+#+end_src
+
+Knative-Operator
+#+begin_src shell
+# Knative Operator
+VERSION=1.6.0
+curl \
+    -o ./manifests/extras/knative/knative-operator.yaml \
+    -L "https://github.com/knative/operator/releases/download/knative-v${VERSION}/operator.yaml"
+sed -i -e 's/namespace: default/namespace: knative-operator/g' ./manifests/extras/knative/knative-operator.yaml
+#+end_src
